@@ -76,9 +76,10 @@ class InternodeMeter:
 	Main class of the GNOME Internode Usage Meter Panel Applet.
 	"""
 
-	ui_dir = os.path.join(INTERNODE_PREFIX, 'share', 'internode')
+	#ui_dir = os.path.join(INTERNODE_PREFIX, 'share', 'internode')
 	#DM: use temp path
-	#ui_dir = '/home/antisol/Downloads/internode-applet-1.7'
+	ui_dir = '/home/antisol/Downloads/internode-applet-1.7'
+
 	pixmap_dir = os.path.join(ui_dir, 'pixmaps') 
 
 	def __init__(self, applet, iid):
