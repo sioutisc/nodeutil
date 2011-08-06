@@ -1,0 +1,2 @@
+#!/bin/bash
+python internode-applet.py --window
