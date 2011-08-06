@@ -1,0 +1,8 @@
+<popup name="button3">
+	<menuitem name="Item 1" verb="Preferences" label="_Preferences..."
+		pixtype="stock" pixname="gtk-properties"/>
+	<menuitem name="Item 2" verb="About" label="_About..."
+		pixtype="stock" pixname="gnome-stock-about"/>	
+	<menuitem name="Item 3" verb="Graph" label="_Graph..."/>
+	<menuitem name="Item 4" verb="Update" label="_Update"/>
+</popup>

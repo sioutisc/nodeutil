@@ -1,0 +1,28 @@
+<oaf_info>
+	<oaf_server iid="OAFIID:InternodeUsageMeterApplet_Factory"
+		type="exe" location="@PREFIX@/bin/internode-applet.py">
+		
+		<oaf_attribute name="repo_ids" type="stringv">
+			<item value="IDL:Bonobo/GenericFactory:1.0"/>
+			<item value="IDL:Bonobo/Unknown:1.0"/>
+		</oaf_attribute>
+		
+		<oaf_attribute name="name" type="string" value="Internode Usage Meter Applet"/>
+		<oaf_attribute name="description" type="string" value="Monitors Internode ADSL Usage"/>
+	</oaf_server>
+
+	<oaf_server iid="OAFIID:InternodeUsageMeterApplet"
+		type="factory" location="OAFIID:InternodeUsageMeterApplet_Factory">
+
+		<oaf_attribute name="repo_ids" type="stringv">
+			<item value="IDL:GNOME/Vertigo/PanelAppletShell:1.0"/>
+			<item value="IDL:Bonobo/Control:1.0"/>
+			<item value="IDL:Bonobo/Unknown:1.0"/>
+		</oaf_attribute>
+
+		<oaf_attribute name="name" type="string" value="Internode Usage Meter Applet"/>
+		<oaf_attribute name="description" type="string" value="Monitors Internode ADSL Usage"/>
+		<oaf_attribute name="panel:category" type="string" value="Utilities"/>
+		<oaf_attribute name="panel:icon" type="string" value="@PREFIX@/share/internode/pixmaps/internode-applet.png"/>
+	</oaf_server>
+</oaf_info>
