@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+X-AWN-Type=Applet
+X-AWN-AppletType=Python
+Name=Internode Applet
+Comment=Display your Internode ADSL usage
+Exec=awn-applet -p %k
+X-AWN-AppletExec=internode/awn-applet.py
+Icon=internode
+X-AWN-AppletCategory=Network
