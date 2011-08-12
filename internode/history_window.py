@@ -8,16 +8,24 @@ from datetime import date
 
 class HistoryWindow:
 
-	def __init__(self, util, ui_dir):
+	def __init__(self, util, ui_dir,parent = None):
 		self.nodeutil = util
 
 		# Load and show the graph dialog box
-		glade = gtk.glade.XML(ui_dir + "/internode-applet.glade", "graph")
+		if parent:
+			glade = glade = gtk.glade.XML(ui_dir + "/internode-applet.glade", "graph_vbox")
+			parent.add(glade.get_widget("graph_vbox"))
+		else:
+			glade = gtk.glade.XML(ui_dir + "/internode-applet.glade", "graph")
+			
 		back_button = glade.get_widget("graph_back_button")
 		forward_button = glade.get_widget("graph_forward_button")
 		self.date_label = glade.get_widget("date_label")
 		self.usage_label = glade.get_widget("usage_label")
 		self.days_spinner = glade.get_widget("graph_days")
+		self.btnShowAll = glade.get_widget("btnShowAll")
+		self.btnThisMonth = glade.get_widget("btnThisMonth")
+		self.btn30d = glade.get_widget("btn30d")
 		align = glade.get_widget("alignment1")
 		vbox = glade.get_widget("graph_vbox")
 		window = glade.get_widget("graph")
@@ -31,8 +39,14 @@ class HistoryWindow:
 		back_button.connect("clicked", self.move_back)
 		forward_button.connect("clicked", self.move_forward)
 		self.days_spinner.connect("value_changed", self.change_days)
+		self.btnShowAll.connect("clicked",self.show_all_data)
+		self.btnThisMonth.connect("clicked",self.show_this_month)
+		self.btn30d.connect("clicked",self.show_30_days)
+		
+		self.graph.show_all()
 
-		window.show_all()
+		if not parent:
+			window.show_all()
 
 		# The number of days to display
 		self.days = 30
@@ -68,6 +82,11 @@ class HistoryWindow:
 		
 	def change_days(self, event):
 		self.days = int(self.days_spinner.get_value())
+		
+		if self.days > len(self.nodeutil.history):
+			self.days = len(self.nodeutil.history)
+			self.days_spinner.set_value(self.days)
+			
 		self.fill_data()
 		self.graph.refresh()	       	
 		
@@ -114,7 +133,7 @@ class HistoryWindow:
                 
 	def fill_data(self):
 		history = self.nodeutil.history
-		self.start = len(history)/self.days * self.days
+		self.start = len(history) - self.days
 		if self.start == len(history):
 			self.start = len(history) - self.days
 		end = self.start + self.days
@@ -122,3 +141,27 @@ class HistoryWindow:
 		if len(history) < self.days:
 			history = self._pad(history)
 		self._set_data(history)
+		
+	def show_all_data(self, event):
+		self.days = len(self.nodeutil.history)
+		self.days_spinner.set_value(self.days)
+		self.change_days(event)
+		
+	def show_this_month(self, event):
+		self.days = 31
+		self.days_spinner.set_value(self.days)
+		self.start = len(self.nodeutil.history) - (self.days - self.nodeutil.daysleft)
+		
+		end = self.start + self.days
+		history = self.nodeutil.history[self.start:end]
+		if len(history) < self.days:
+			history = self._pad(history)
+		self._set_data(history)		
+		
+		self.graph.refresh()
+
+	def show_30_days(self, event):
+		self.days = 30
+		self.start = len(self.nodeutil.history) - 30
+		self.days_spinner.set_value(self.days)
+		self.change_days(event)
