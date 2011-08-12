@@ -28,6 +28,7 @@ class HistoryWindow:
 		self.btn30d = glade.get_widget("btn30d")
 		align = glade.get_widget("alignment1")
 		vbox = glade.get_widget("graph_vbox")
+		self.vbox = vbox
 		window = glade.get_widget("graph")
 
 		self.graph = Graph()

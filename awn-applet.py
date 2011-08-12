@@ -83,12 +83,11 @@ class InternodeAwnApp:
 		self.notification = applet.notify.create_notification("Alert", applet_logo, "dialog-warning", 20)
 		#self.notification.show()
 
-		#self.ui_dir = "/home/antisol/Downloads/internode-applet-1.7"
 		self.ui_dir = os.path.dirname(__file__)
 		self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
 
 		# set applet icon...
-		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode-applet.png"))
+		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode-x.png"))
 
 		applet.set_icon_pixbuf(icon)
 
@@ -127,15 +126,30 @@ class InternodeAwnApp:
 		self.percent = stats.get_widget("percentage")
 		self.usage = stats.get_widget("usage")
 		
+		notebook = stats.get_widget("notebook")
+		
 		#add a history window to the details pane...
-		graph_window = HistoryWindow(self.nodeutil, self.ui_dir,details)
+		graph_window = HistoryWindow(self.nodeutil, self.ui_dir,notebook)
 		
 		#request a graph taller than 2px...
 		graph_window.graph.set_size_request(0,200)
 		
 		self.graph = graph_window
 		
+		notebook.set_tab_label_text(self.graph.vbox, "Chart")
+		
 		dialog.add(details)
+		
+		alert = applet.dialog.new("alert")
+		alertglade = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_vbox")
+		box = alertglade.get_widget("alert_vbox")
+		alertglade.get_widget("btnOK").connect("clicked",self.close_alert)
+		alertglade.get_widget("btnBuyData").connect("clicked",self.buy_data)
+
+		#mert = gtk.Label("mert")
+		alert.add(box)
+		
+		self.alert = alert
 		
 		ic = stats.get_widget("icon")
 		#print ic.__class__.__name__
@@ -156,6 +170,18 @@ class InternodeAwnApp:
 		applet.timing.delay(self.update, 1.0)
 
 		self.log("Init Complete")
+		self.show_alert();
+		
+	def show_alert(self):
+		self.alert.show_all()
+	
+	def	close_alert(self, widget = None, data = None):
+		self.alert.hide()
+		
+	def buy_data(self, widget = None, data = None):
+		os.spawnlp(os.P_NOWAIT,"gnome-www-browser","gnome-www-browser",
+			"https://secure.internode.on.net/myinternode")
+		self.close_alert(widget,data)
 
 	def log(self,message):
 		"""
@@ -232,7 +258,7 @@ class InternodeAwnApp:
 			
 			self.percent.set_markup('<span size="16000"><i>%3d%%</i></span>' % percent)
 			
-			self.usage.set_markup('<span size="16000"><b>%9d</b>MB / <b>%9d</b>MB</span>' % (usage,self.nodeutil.quota))
+			self.usage.set_markup('<span size="16000"><b>%2d</b>MB / <b>%2d</b>MB</span>' % (usage,self.nodeutil.quota))
 
 			#scroll graph to the end of the data...
 			#start = len(self.nodeutil.history) - (self.graph.days-1)
