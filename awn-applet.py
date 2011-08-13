@@ -19,6 +19,17 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.	If not, see <http://www.gnu.org/licenses/>.
 
+"""
+
+TODO ITEMS:
+
+- try to remove constants.py - figure out paths dynamically (?)
+- make nodeutil spawn a thread for updating
+- make awn applet size icon according to applet size
+- abstract away most UI stuff so that it can be used for either awn or gnome-panel
+
+"""
+
 import time
 import sys
 import os
@@ -35,7 +46,7 @@ except ImportError:
 try:
 	#import gnome.ui
 	import gconf
-	#import gobject
+	import gobject
 except ImportError:
 	print "Failed to open GNOME libraries."
 	print "Please ensure they are installed correctly."
@@ -52,6 +63,8 @@ except ImportError:
 from internode.nodeutil import NodeUtil, UpdateError
 from internode.history_window import HistoryWindow
 
+from internode.node_dialog import *
+
 applet_name = "Internode Usage Meter"
 applet_version = "0.0.2"
 applet_description = "Monitors your Internode ADSL usage"
@@ -65,6 +78,29 @@ update_interval = 90
 #debugging mode. When this is on, log() does something,
 #	and there is a 'die' menu item for easy reloading during testing
 DEBUG=True
+
+
+"""
+#The following demonstrates a simple callback in python. we'll use this for nodeutil:
+
+def mert():
+	print "MERT!"
+	
+class Something:
+	@classmethod
+	def __init__(self,callback):
+		self.updatefunc = staticmethod(callback)
+		
+	@classmethod
+	def on_update(self):
+		self.updatefunc()
+		
+a = Something(mert)
+
+a.on_update()
+
+sys.exit(0)
+"""
 
 class InternodeAwnApp:
 	def __init__(self, applet):
@@ -86,6 +122,8 @@ class InternodeAwnApp:
 		self.ui_dir = os.path.dirname(__file__)
 		self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
 
+		#self.log("UI Dir: '%s'" % self.ui_dir)
+
 		# set applet icon...
 		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode-x.png"))
 
@@ -96,7 +134,9 @@ class InternodeAwnApp:
 		applet.set_tooltip_text("Internode Usage Meter")
 
 		self.nodeutil = NodeUtil()
-
+		
+		self.nodeutil.on_status_change(self.status_changed)
+		
 		self.overlay = awn.OverlayText()
 		self.overlay.props.gravity = gtk.gdk.GRAVITY_SOUTH
 		self.overlay.props.font_sizing = 18
@@ -125,6 +165,11 @@ class InternodeAwnApp:
 		self.progressbar = stats.get_widget("progressbar")
 		self.percent = stats.get_widget("percentage")
 		self.usage = stats.get_widget("usage")
+		self.heading = stats.get_widget("heading")
+		self.remaining = stats.get_widget("remaining")
+		self.remaining_mb = stats.get_widget("remaining_mb")
+		self.rate_per_day = stats.get_widget("rate_per_day")
+		self.suggested_speed = stats.get_widget("suggested_speed")
 		
 		notebook = stats.get_widget("notebook")
 		
@@ -138,18 +183,50 @@ class InternodeAwnApp:
 		
 		notebook.set_tab_label_text(self.graph.vbox, "Chart")
 		
+		list = gtk.ListStore(int,str)
+		list.append([100,"You be capped!"])
+		list.append([90,"Internode usage is critically high!"])
+		list.append([75,"Three Quarters of your Internode data has been used!"])
+		list.append([50,"You've used half your Internode data!"])
+		list.append([0,"A New Month!"])
+		
+		##alertlist = stats.get_widget("alertlist")
+		#alertlist = gtk.TreeView(list)
+		alerts = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alerts_vbox")
+		alerts_box = alerts.get_widget("alerts_vbox")
+		alertlist = alerts.get_widget("alert_list")
+		alertlist.set_model(list)
+		alertlist.set_rules_hint(True)
+		
+		rendererText = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("At %", rendererText, text=0)
+		column.set_sort_column_id(0)    
+		alertlist.append_column(column)
+
+		rendererText = gtk.CellRendererText()
+		column = gtk.TreeViewColumn("Message", rendererText, text=1)
+		column.set_sort_column_id(1)
+		alertlist.append_column(column)
+		
+		notebook.append_page(alerts_box)
+		notebook.set_tab_label_text(alerts_box, "Alerts")
+		##alertlist.realize()
+		
 		dialog.add(details)
 		
-		alert = applet.dialog.new("alert")
-		alertglade = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_vbox")
-		box = alertglade.get_widget("alert_vbox")
-		alertglade.get_widget("btnOK").connect("clicked",self.close_alert)
-		alertglade.get_widget("btnBuyData").connect("clicked",self.buy_data)
+		#alert = applet.dialog.new("alert")
+		#alertglade = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_vbox")
+		#box = alertglade.get_widget("alert_vbox")
+		#alertglade.get_widget("btnOK").connect("clicked",self.close_alert)
+		#alertglade.get_widget("btnBuyData").connect("clicked",self.buy_data)
+		
+		#editor = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_editor")
+		#editor.get_widget("alert_editor").show_all()
 
 		#mert = gtk.Label("mert")
-		alert.add(box)
+		#alert.add(box)
 		
-		self.alert = alert
+		#self.alert = alert
 		
 		ic = stats.get_widget("icon")
 		#print ic.__class__.__name__
@@ -157,22 +234,40 @@ class InternodeAwnApp:
 		ic.set_from_pixbuf(self.logo)
 		
 		self.dialog = dialog
+		self.notebook = notebook
 		
 		self.setup_context_menu()
 		
 		#commented out - awnlib does this automagically
-		#applet.connect("clicked", self.on_clicked)
+		applet.connect("clicked", self.on_clicked)
 
 		#icon = applet.get_icon()
 		#effect = awn.Effects(icon)
 
+		self.update()
+		
+		alertdlg = applet.dialog.new("alertdlg")
+		self.alert = NodeDialog_Alert(self.nodeutil,"This be an alert!",alertdlg,None,True)
+		
+		#we can now easily popup an alert with the likes of:
+		#	self.alert.set_text("Yo Momma!")
+		#	self.alert.show()
+		#or, more simply:
+		#	self.alert.show('MERT!')
+
 		applet.timing.register(self.update, update_interval * 60)
 		applet.timing.delay(self.update, 1.0)
-
-		self.log("Init Complete")
-		self.show_alert();
 		
-	def show_alert(self):
+		self.log("Init Complete")
+		#self.show_alert("Some text");
+		
+	def status_changed(self):
+		print "-------------------------------------------------------"
+		print "Status: %s (%s)" % (self.nodeutil.status, self.nodeutil.error)
+		print "-------------------------------------------------------"
+		
+	def show_alert(self,text):
+		#TODO: set text on the alert
 		self.alert.show_all()
 	
 	def	close_alert(self, widget = None, data = None):
@@ -220,6 +315,10 @@ class InternodeAwnApp:
 	def update(self, widget = None, data = None):
 		"""
 		Fetches the latest usage information and updates the display
+		
+		TODO: this should actually update the awn applet based on the nodeutil's state
+		we should never actually need to call nodeutil.update()
+		
 		"""
 
 		self.log("Updating...")
@@ -228,8 +327,12 @@ class InternodeAwnApp:
 		self.overlay.props.active = False
 		self.throbber.props.active = True
 		try:
-			self.nodeutil.update()
+			self.nodeutil.do_update()
 			self.update_image()
+			
+			if self.nodeutil.status != "OK":
+				#can't update...
+				return True
 
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
@@ -247,9 +350,11 @@ class InternodeAwnApp:
 			else:
 				daystring = 'days'
 
+			rate_per_day = self.nodeutil.remaining / self.nodeutil.daysleft
+
 			tiptext = "Internode usage for: %s\n%.2f / %iMB %s\n%i %s (%i MB / day) remaining\nLast Update: %s" % \
 				(self.nodeutil.username,usage, self.nodeutil.quota, status, self.nodeutil.daysleft,
-					daystring,self.nodeutil.remaining / self.nodeutil.daysleft,time.ctime(self.nodeutil.time))
+					daystring,rate_per_day,time.ctime(self.nodeutil.time))
 
 			self.overlay.props.text = "%i%%" % percent
 			self.overlay.props.active = True
@@ -258,7 +363,18 @@ class InternodeAwnApp:
 			
 			self.percent.set_markup('<span size="16000"><i>%3d%%</i></span>' % percent)
 			
-			self.usage.set_markup('<span size="16000"><b>%2d</b>MB / <b>%2d</b>MB</span>' % (usage,self.nodeutil.quota))
+			self.usage.set_markup('<span size="16000"><b>%2d</b> MB / <b>%2d</b> MB</span>' % (usage,self.nodeutil.quota))
+			
+			self.heading.set_markup('<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
+			
+			self.remaining.set_markup('<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
+			
+			rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
+			
+			self.suggested_speed.set_markup('Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
+			
+			self.remaining_mb.set_markup('<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
+			self.rate_per_day.set_markup('<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' % rate_per_day)
 
 			#scroll graph to the end of the data...
 			#start = len(self.nodeutil.history) - (self.graph.days-1)
@@ -351,9 +467,9 @@ class InternodeAwnApp:
 		graph_window = HistoryWindow(self.nodeutil, self.ui_dir)
 
 
-	#def on_clicked(self, widget):
+	def on_clicked(self, widget):
 		#self.log("Clicked")
-		
+		self.notebook.set_current_page(0)
 		#self.graph.graph.refresh()
 
 

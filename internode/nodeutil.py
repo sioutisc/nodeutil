@@ -27,6 +27,10 @@
 # http://www.internode.on.net/contact/support/ for the API document
 #
 
+#setting this constant to true makes NodeUtil pretend like 
+#	we're not connected to teh Intarwebs. Useful for testing.
+SIMULATE_ERRORSTATE = True
+
 ###########
 # Imports #
 ###########
@@ -36,7 +40,8 @@ import datetime
 import urllib2
 import base64
 from xml.dom import minidom
-
+import thread
+import threading
 
 #####################
 # Class Definitions #
@@ -61,6 +66,7 @@ class NodeUtil:
 		self.time = 0
 		
 		self.error = ""
+		self.signal_enabled = False
 
 		self.percent_used = 0
 		self.percent_remaining = 0
@@ -71,18 +77,90 @@ class NodeUtil:
 		self.daysleft = 0
 		
 		self.history = []
-
+		
+		self.status = "Initialising"
+		
+		self.update_interval = 60 # 3600 #one hour
+		
+		#TODO: spawn a thread which updates the usage meter periodically 
+		#	and sends the status change signal
+		self.lock = thread.allocate_lock()
+		
+		thread.start_new_thread(self.thread_func,())
+		
+	
+	def thread_func(self):
+		"""
+		The NodeUtil Main Thread
+		
+		This Thread spends most of it's time sleeping. Every now and then it wakes up
+			to retrieve data from Internode.
+			
+		Normally, this is once per hour, but if there's an error, or settings are not populated.
+			it will try again sooner.
+		
+		The status attribute of the NodeUtil class indicates the current status of the thread
+		
+		TODO: enable a 'force refresh now' mechanism?
+		
+		"""
+		while True:
+			print "Thread tick!"
+			interval = self.update_interval
+			if (not self.username) or (not self.password):
+				#no settings, don't try to update
+				print "nodeutil has no settings, trying again in 10 seconds..."
+				interval = 10
+				
+			
+			try:
+				self.do_update()
+			except:
+				interval = 60	#try again in 1 minute...
+			
+			time.sleep(interval)
+		
+	
+	@classmethod
+	def on_status_change(self,callback):
+		"""
+		sets the callback which is called when status changes
+		"""
+		self.signal_enabled = True
+		self.callback = staticmethod(callback)
+		
+	def remove_callback(self):
+		"""
+		Disables the status change callback
+		"""
+		self.signal_enabled = False
+		
+	@classmethod
+	def send_status_signal(self):
+		"""
+		Triggers the status change callback if one had been set
+		"""
+		if self.signal_enabled:
+			self.callback()
 
 	def do_update(self):
 		"""
 		Updates data, regardless of currently held data
 		"""
+		self.status = "Fetching..."
+		self.error = ""
+		self.send_status_signal()
 		
-		# Just get data for first service
-		service = self.get_services()[0]
+		try:
+			# Just get data for first service
+			service = self.get_services()[0]
+			self.get_usage(service)
+			self.get_history(service)
+			self.status = "OK"
+		except UpdateError:
+			self.status = "Error"
 		
-		self.get_usage(service)
-		self.get_history(service)
+		self.send_status_signal()
 
 		# params_dic = {}
 		# params_dic["username"] = self.username
@@ -105,22 +183,31 @@ class NodeUtil:
 			services = []
 		
 			dom = self.api_request("/api/v1.5/")
+			self.lock.acquire()
 			for node in dom.getElementsByTagName('service'):
 				services.append({
 					'id':		self.get_text(node),
 					'type': node.getAttribute('type'),
 					'path': node.getAttribute('href')
 				})
+			self.lock.release()
 		
 			return services
 		
 		except IOError:
 			self.error = "Failed to fetch service data."
+			self.send_status_signal()
+			self.status = "Error"
+			if self.lock.locked(): 
+				self.lock.release()
 			raise UpdateError
+			
+		
 		
 	def get_usage(self, service):
 		try:
 			dom = self.api_request("%s/usage" % service['path'])
+			self.lock.acquire()
 			traffic = dom.getElementsByTagName('traffic')[0]
 			
 			self.quota = float(traffic.getAttribute('quota')) / 1024 / 1024
@@ -133,17 +220,23 @@ class NodeUtil:
 			self.daysleft = get_date_difference(traffic.getAttribute('rollover'))
 			
 			self.time = time.time()
-			print "Data updated for username %s." % self.username
+			#print "Data updated for username %s." % self.username
+			self.lock.release()
 
 			self.error = ""
 		
 		except IOError:
 			self.error = "Failed to fetch usage data."
+			self.send_status_signal()
+			self.status = "Error"
+			if self.lock.locked(): 
+				self.lock.release()
 			raise UpdateError
 	
 	def get_history(self, service):
 		try:
 			dom = self.api_request("%s/history" % service['path'])
+			self.lock.acquire()
 			usagelist = dom.getElementsByTagName('usage')
 			
 			self.history = []
@@ -151,10 +244,17 @@ class NodeUtil:
 				date = parse_date(node.getAttribute('day')).strftime('%y%m%d')
 				mb = "%.6f" % (self.fetch_traffic_total(node) / 1024 / 1024)
 				self.history.append((date, mb))
+				
+			self.lock.release()
 			
 		except IOError:
 			self.error = "Failed to fetch usage data."
+			self.send_status_signal()
+			self.status = "Error"
+			if self.lock.locked(): 
+				self.lock.release()
 			raise UpdateError
+			
 	
 	def get_text(self, node):
 		text = ""
@@ -172,6 +272,10 @@ class NodeUtil:
 		return 0
 
 	def api_request(self, path):
+		
+		if SIMULATE_ERRORSTATE:
+			raise IOError
+		
 		request = urllib2.Request("%s%s" % (self.api_host, path))
 		request.add_header('User-Agent', 'UsageMeterForGNOME/1.7')
 		request.add_header('Authorization', self.http_auth_string())
@@ -189,6 +293,9 @@ class NodeUtil:
 
 		if time.time() - 3600 > self.time:
 			self.do_update()
+		else:	
+			#pretend we updated...
+			self.send_status_signal()
 
 
 class UpdateError(Exception):
