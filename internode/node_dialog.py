@@ -160,7 +160,7 @@ class NodeDialog_Alert(NodeDialog):
 		Sets the alert text
 		"""
 		try:
-			self.nodeutil.update()
+			#self.nodeutil.update()
 			if self.nodeutil.status == "OK":
 				self.label.set_markup('<span size="14000">%s</span>\n\
 					\nYour internode usage for this month has reached <b>%2d%%</b>!\n\

@@ -29,12 +29,12 @@
 
 #setting this constant to true makes NodeUtil pretend like 
 #	we're not connected to teh Intarwebs. Useful for testing.
-SIMULATE_ERRORSTATE = True
+SIMULATE_ERRORSTATE = False
 
 ###########
 # Imports #
 ###########
-
+import sys
 import time
 import datetime
 import urllib2
@@ -42,6 +42,9 @@ import base64
 from xml.dom import minidom
 import thread
 import threading
+
+
+DEBUG=False
 
 #####################
 # Class Definitions #
@@ -80,7 +83,10 @@ class NodeUtil:
 		
 		self.status = "Initialising"
 		
-		self.update_interval = 60 # 3600 #one hour
+		if DEBUG:
+			self.update_interval = 60  #radically increased update rate for debugging...
+		else:
+			self.update_interval = 3600 #one hour
 		
 		#TODO: spawn a thread which updates the usage meter periodically 
 		#	and sends the status change signal
@@ -101,22 +107,24 @@ class NodeUtil:
 		
 		The status attribute of the NodeUtil class indicates the current status of the thread
 		
-		TODO: enable a 'force refresh now' mechanism?
-		
 		"""
 		while True:
-			print "Thread tick!"
+			print "---> Tick! <---"
 			interval = self.update_interval
 			if (not self.username) or (not self.password):
 				#no settings, don't try to update
 				print "nodeutil has no settings, trying again in 10 seconds..."
 				interval = 10
 				
-			
 			try:
 				self.do_update()
 			except:
-				interval = 60	#try again in 1 minute...
+				if DEBUG:
+					interval = 10
+				else:
+					interval = 60	#try again in 1 minute...
+				self.status = "Error (Trying again in %2d s)" % interval
+				self.send_status_signal()
 			
 			time.sleep(interval)
 		
@@ -147,18 +155,15 @@ class NodeUtil:
 		"""
 		Updates data, regardless of currently held data
 		"""
-		self.status = "Fetching..."
+		self.status = "Fetching"
 		self.error = ""
 		self.send_status_signal()
 		
-		try:
-			# Just get data for first service
-			service = self.get_services()[0]
-			self.get_usage(service)
-			self.get_history(service)
-			self.status = "OK"
-		except UpdateError:
-			self.status = "Error"
+		# Just get data for first service
+		service = self.get_services()[0]
+		self.get_usage(service)
+		self.get_history(service)
+		self.status = "OK"
 		
 		self.send_status_signal()
 

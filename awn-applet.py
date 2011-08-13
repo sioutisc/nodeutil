@@ -125,7 +125,7 @@ class InternodeAwnApp:
 		#self.log("UI Dir: '%s'" % self.ui_dir)
 
 		# set applet icon...
-		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode-x.png"))
+		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode.svg"))
 
 		applet.set_icon_pixbuf(icon)
 
@@ -244,7 +244,7 @@ class InternodeAwnApp:
 		#icon = applet.get_icon()
 		#effect = awn.Effects(icon)
 
-		self.update()
+		#self.update()
 		
 		alertdlg = applet.dialog.new("alertdlg")
 		self.alert = NodeDialog_Alert(self.nodeutil,"This be an alert!",alertdlg,None,True)
@@ -264,6 +264,7 @@ class InternodeAwnApp:
 	def status_changed(self):
 		print "-------------------------------------------------------"
 		print "Status: %s (%s)" % (self.nodeutil.status, self.nodeutil.error)
+		self.update()
 		print "-------------------------------------------------------"
 		
 	def show_alert(self,text):
@@ -316,7 +317,7 @@ class InternodeAwnApp:
 		"""
 		Fetches the latest usage information and updates the display
 		
-		TODO: this should actually update the awn applet based on the nodeutil's state
+		TODO: this should actually just update the awn applet based on the nodeutil's state
 		we should never actually need to call nodeutil.update()
 		
 		"""
@@ -324,15 +325,16 @@ class InternodeAwnApp:
 		self.log("Updating...")
 
 		#self.notification.show()
-		self.overlay.props.active = False
-		self.throbber.props.active = True
-		try:
-			self.nodeutil.do_update()
-			self.update_image()
+		if self.nodeutil.status == "Fetching":
+			self.overlay.props.active = False
+			self.throbber.props.active = True
+			tiptext = "Fetching..."
 			
-			if self.nodeutil.status != "OK":
-				#can't update...
-				return True
+		elif self.nodeutil.status == "OK":
+			#self.nodeutil.do_update()
+			self.update_image()
+				
+			self.nodeutil.lock.acquire()
 
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
@@ -357,7 +359,7 @@ class InternodeAwnApp:
 					daystring,rate_per_day,time.ctime(self.nodeutil.time))
 
 			self.overlay.props.text = "%i%%" % percent
-			self.overlay.props.active = True
+			#self.overlay.props.active = True
 			
 			self.progressbar.set_fraction(percent / float(100))
 			
@@ -383,10 +385,15 @@ class InternodeAwnApp:
 			
 			#self.graph.start = start
 			#self.graph.end = len(self.nodeutil.history)
+			self.nodeutil.lock.release()
+			
+			self.overlay.props.active = True
+			self.throbber.props.active = False
 
 			self.log("Updated OK")
 
-		except UpdateError:
+		#except UpdateError:
+		else:
 			# An error occurred
 			#self.label.set_text("??%")
 			self.log("Update error: %s" % self.nodeutil.error)
@@ -397,7 +404,7 @@ class InternodeAwnApp:
 		#self.tooltips.set_tip(self.eventbox, tiptext)
 		self.applet.set_tooltip_text(tiptext)
 
-		self.throbber.props.active = False
+		#self.throbber.props.active = False
 
 		# Return true so the GTK timeout will continue
 		return True
@@ -457,7 +464,7 @@ class InternodeAwnApp:
 		self.icons["u100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u100.png")
 
 		# About logo
-		self.logo = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-applet.png")
+		self.logo = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
 
 
 	def show_graph(self, widget = None, data = None):
@@ -539,7 +546,7 @@ class InternodeAwnApp:
 			self.nodeutil.password = passtext.get_text()
 			self.nodeutil.show_used = used.get_active()
 			self.write_prefs()
-			self.update()
+			#self.update()
 
 		preferences.destroy()
 
