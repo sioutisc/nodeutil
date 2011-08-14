@@ -11,7 +11,9 @@ pygtk.require('2.0')
 
 import gtk
 
-import internode
+from internode.internode import InternodeMeter
+
+import internode.constants
 
 if internode.constants.INTERNODE_GNOMEAPPLET == 'gnomeapplet':
 	import gnomeapplet
@@ -28,7 +30,7 @@ def internode_factory(applet, iid):
 	Creates an Internode Usage Meter Applet
 	"""
 
-	internode.InternodeMeter(applet, iid)
+	InternodeMeter(applet, iid)
 	return True
 
 

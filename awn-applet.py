@@ -292,13 +292,16 @@ class InternodeAwnApp:
                     
                 self.nodeutil.update(force)
 
+                #we only read this once
+                status = self.nodeutil.status
+
 		#self.notification.show()
-		if self.nodeutil.status == "Updating":
+		if status == "Updating":
 			self.overlay.props.active = False
 			self.throbber.props.active = True
 			tiptext = "Updating..."
 
-		elif self.nodeutil.status == "OK":
+		elif status == "OK":
 			#self.nodeutil.do_update()
                         self.throbber.props.active = False
 			self.update_image()
@@ -321,9 +324,9 @@ class InternodeAwnApp:
 
 			rate_per_day = self.nodeutil.remaining / self.nodeutil.daysleft
 
-			tiptext = "Internode usage for: %s\n%.2f / %iMB %s\n%i %s (%i MB / day) remaining\nLast Update: %s" % \
+			tiptext = "Internode usage for: %s\n%.2f / %iMB %s\n%i %s (%i MB / day) remaining\nLast Update: %s ago" % \
 				(self.nodeutil.username,usage, self.nodeutil.quota, status, self.nodeutil.daysleft,
-					daystring,rate_per_day,time.ctime(self.nodeutil.time))
+					daystring,rate_per_day,friendly_time(time.time() - self.nodeutil.time))
 
 			self.overlay.props.text = "%i%%" % percent
 			#self.overlay.props.active = True
@@ -363,7 +366,7 @@ class InternodeAwnApp:
 
 			#log("Updated OK")
 
-                elif self.nodeutil.status == "Error":
+                elif status == "Error":
             		#log("Update error: %s" % self.nodeutil.error)
 			tiptext = self.nodeutil.error
 			self.overlay.props.active = False
@@ -440,7 +443,9 @@ class InternodeAwnApp:
 		self.icons["u100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u100.png")
 
 		# About logo
-		self.logo = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
+		self.logo_large = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
+                #smaller logo
+                self.logo = gtk.gdk.pixbuf_new_from_file_at_size(self.pixmap_dir + "/internode.svg", 44, 48)
 
 
 	def show_graph(self, widget = None, data = None):

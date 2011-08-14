@@ -178,13 +178,18 @@ class NodeDialog_Main(NodeDialog):
 		graph_window.graph.set_size_request(0,200)
 
 		self.graph = graph_window
+                self.graph_populated = False
 
 		self.notebook.set_tab_label_text(self.graph.vbox, "Chart")
 
 			
 	def refresh(self):
             if self.nodeutil.status == "OK":
-                self.graph.fill_data()
+                if self.graph_populated == False:
+                    #only do this once
+                    self.graph.fill_data()
+                    self.graph_populated = True
+
                 self.get_widget("heading").set_markup(
                     '<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
 
@@ -215,6 +220,10 @@ class NodeDialog_Main(NodeDialog):
                 secs = (time.time() - self.nodeutil.time)
 
                 self.get_widget("last_updated").set_markup("Last updated: %s ago" % friendly_time(secs))
+            elif self.nodeutil.status == "Updating":
+                self.get_widget("last_updated").set_markup("Last updated: <b><i>Updating Now!</i></b>")
+            elif self.nodeutil.status == "Error":
+                self.graph_populated = False
 
 
 

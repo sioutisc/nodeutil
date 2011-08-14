@@ -159,7 +159,7 @@ class InternodeMeter:
 		Sets the icon to the appropriate image.
 		"""
 
-		if self.nodeutil.error == "":
+		if self.nodeutil.status == "OK":
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
 				prefix = "u"
@@ -183,7 +183,7 @@ class InternodeMeter:
 			self.image.set_from_pixbuf(self.icons["x"])
 
 
-	def set_timeout(self, enable = True, interval = 3600000):
+	def set_timeout(self, enable = True, interval = 5):
 		"""
 		Sets or unsets the timeout to automatically update the usage meter
 		"""
@@ -199,34 +199,45 @@ class InternodeMeter:
 		Fetches the latest usage information and updates the display
 		"""
 
-		try:
-			self.nodeutil.update()
-			self.update_image()
+                tiptext = "??"
 
-			if self.nodeutil.show_used:
-				percent = self.nodeutil.percent_used
-				usage = self.nodeutil.used
-				status = "used"
-			else:
-				percent = self.nodeutil.percent_remaining
-				usage = self.nodeutil.remaining
-				status = "remaining"
-		
-			self.label.set_text("%i%%" % percent)
-			
-			if self.nodeutil.daysleft == 1:
-				daystring = 'day'
-			else:
-				daystring = 'days'
-			
-			tiptext = "%.2f/%iMB %s\n%i %s remaining" % \
-				(usage, self.nodeutil.quota, status, self.nodeutil.daysleft, daystring)
+		#try:
+                self.update_image()
+                self.nodeutil.update()
 
-		except UpdateError:
-			# An error occurred
-			self.label.set_text("??%")
-			tiptext = self.nodeutil.error
-			self.update_image()
+                if self.nodeutil.status == "OK":
+                    if self.nodeutil.show_used:
+                            percent = self.nodeutil.percent_used
+                            usage = self.nodeutil.used
+                            status = "used"
+                    else:
+                            percent = self.nodeutil.percent_remaining
+                            usage = self.nodeutil.remaining
+                            status = "remaining"
+
+                    self.label.set_text("%i%%" % percent)
+
+                    if self.nodeutil.daysleft == 1:
+                            daystring = 'day'
+                    else:
+                            daystring = 'days'
+
+                    tiptext = "%.2f/%iMB %s\n%i %s remaining" % \
+                            (usage, self.nodeutil.quota, status, self.nodeutil.daysleft, daystring)
+
+                elif self.nodeutil.status == "Updating":
+                    tiptext = "Updating..."
+                    
+                elif self.nodeutil.status == "Error":
+                    tiptext = "Error: %s" % self.nodeutil.error
+                    self.label.set_text("??%")
+                    self.update_image()
+
+		#except UpdateError:
+		#	# An error occurred
+		#	self.label.set_text("??%")
+		#	tiptext = self.nodeutil.error
+		#	self.update_image()
 
 		self.tooltips.set_tip(self.eventbox, tiptext)
 		

@@ -195,7 +195,7 @@ class NodeUtil(object):
         These are called from within the update thread
     """
     def get_services(self):
-        log("Retrieving services...")
+        #log("Retrieving services...")
         try:
             services = []
 
@@ -207,7 +207,7 @@ class NodeUtil(object):
                     'path': node.getAttribute('href')
                 })
 
-            log("Services retrieved.")
+            #log("Services retrieved.")
 
             return services
 
@@ -216,7 +216,7 @@ class NodeUtil(object):
             self.status = "Error"
 
     def get_usage(self, service):
-        log("Retrieving usage...")
+        #log("Retrieving usage...")
         try:
             dom = self.api_request("%s/usage" % service['path'])
 
@@ -232,7 +232,7 @@ class NodeUtil(object):
             self.daysleft = get_date_difference(traffic.getAttribute('rollover'))
 
             self.time = time.time()
-            log( "Data updated for username %s." % self.username)
+            #log( "Data updated for username %s." % self.username)
 
             self.error = ""
 
@@ -241,7 +241,7 @@ class NodeUtil(object):
             self.status = "Error"
 
     def get_history(self, service):
-        log("Retrieving history...")
+        #log("Retrieving history...")
         try:
             dom = self.api_request("%s/history" % service['path'])
 
@@ -302,16 +302,16 @@ class NodeUtil(object):
         if self.status != "Updating" and (
             (time.time() - self.update_interval > self.time) or force):
                 log("NodeUtil.update(%s)" % force)
-                log("Spawning Thread...")
+                #log("Spawning Thread...")
                 thread.start_new_thread(self.update_thread_func,())
-                log("Thread Started.")
+                #log("Thread Started.")
 
     def update_thread_func(self):
         """
         this function is our worker thread.
         it fetches data from teh internodes, updates our NodeUtil Properties, and exits
         """
-        log("NodeUtil.update_thread_func()")
+        #log("NodeUtil.update_thread_func()")
 
         self.status = "Updating"
         self.time = time.time()
@@ -327,7 +327,7 @@ class NodeUtil(object):
             self.status = "Error"
             self.error = "An unexpected error occurred"
 
-        log("Nodeutil.update_thread_func() done")
+        log("Nodeutil.update complete")
         #thread.interrupt_main()
 
         #thread exits silently...
