@@ -25,6 +25,7 @@
 # Imports #
 ###########
 
+from node_dialog import *
 import sys
 import os
 
@@ -66,7 +67,6 @@ else:
 
 from nodeutil import NodeUtil, UpdateError
 from history_window import HistoryWindow
-
 
 #####################
 # Class Definitions #
@@ -125,6 +125,10 @@ class InternodeMeter:
 		self.nodeutil = NodeUtil()
 		self.load_prefs()
 
+                self.dialog = None
+
+                applet.connect("button-press-event",self.on_clicked)
+
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
 
@@ -152,7 +156,8 @@ class InternodeMeter:
 		self.icons["u100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u100.png")
 
 		# About logo
-		self.logo = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/logo.png")
+		self.logo_large = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
+                self.logo = gtk.gdk.pixbuf_new_from_file_at_size(self.pixmap_dir + "/internode.svg", 44, 48)
 
 
 	def update_image(self):
@@ -194,13 +199,31 @@ class InternodeMeter:
 		else:
 			gobject.timeout_remove(self.timeout)
 		
+        def on_clicked(self, widget = None, event = None):
+            if event.type == gtk.gdk.BUTTON_PRESS and event.button == 1:
+                if not self.dialog:
+                    self.dialog = NodeDialog_Main(self.nodeutil)
+                    self.dialog.get_widget("icon").set_from_pixbuf(self.logo)
+                    self.dialog.refresh()
+                    self.dialog.on_refresh_click(self.force_update)
+                    self.dialog.parent.connect("destroy",self.dialog_closed)
+                    self.dialog.show()
+                else:
+                    self.dialog.parent.destroy()
+
+
+        def dialog_closed(self,widget = None, data = None):
+            self.dialog = None
+
+        def force_update(self,widget = None, data = None):
+            self.update(widget, "Force")
 
 	def update(self, widget = None, data = None):
 		"""
 		Fetches the latest usage information and updates the display
 		"""
 
-                #print "update"
+                #print "update '%s'" % data
 
                 tiptext = "??"
                 if data:
@@ -232,6 +255,9 @@ class InternodeMeter:
                             daystring = 'days'
 
                     self.update_image()
+
+                    if self.dialog:
+                        self.dialog.refresh()
 
                     tiptext = "%.2f/%iMB %s\n%i %s remaining" % \
                             (usage, self.nodeutil.quota, status, self.nodeutil.daysleft, daystring)
