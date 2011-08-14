@@ -200,10 +200,14 @@ class InternodeMeter:
 		"""
 
                 tiptext = "??"
-
+                if data:
+                    force = True
+                else:
+                    force = False
+                    
 		#try:
                 self.update_image()
-                self.nodeutil.update()
+                self.nodeutil.update(force)
 
                 if self.nodeutil.status == "OK":
                     if self.nodeutil.show_used:
