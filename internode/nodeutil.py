@@ -87,6 +87,8 @@ class NodeUtil(object):
         self.can_has_callback = False
         self._callback = None
 
+        self.update_interval = 30 * 60 #half an hour
+
         self.lock = threading.RLock()
 
         self.status = "Ready"
@@ -296,11 +298,13 @@ class NodeUtil(object):
         fetch is done by spawning a new thread.
 
         """
-        log("NodeUtil.update(%s)" % force)
-        
-        log("Spawning Thread...")        
-        thread.start_new_thread(self.update_thread_func,())
-        log("Thread Started.")
+
+        if self.status != "Updating" and (
+            (time.time() - self.update_interval > self.time) or force):
+                log("NodeUtil.update(%s)" % force)
+                log("Spawning Thread...")
+                thread.start_new_thread(self.update_thread_func,())
+                log("Thread Started.")
 
     def update_thread_func(self):
         """

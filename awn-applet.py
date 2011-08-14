@@ -245,7 +245,7 @@ class InternodeAwnApp:
 		#	self.alert.show('MERT!')
 
 		#applet.timing.register(self.update, update_interval * 60)
-                applet.timing.register(self.update, 10)
+                applet.timing.register(self.update, 5)
 		applet.timing.delay(self.update, 1.0)
 
                 self.nodeutil.update()
@@ -305,12 +305,12 @@ class InternodeAwnApp:
 
 		"""
 
-		log("Updating UI")
+		#log("Updating UI")
 		#log(self.nodeutil.status)
 
-                if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
-                    log("Calling nodeutil.update()")
-                    self.nodeutil.update()
+                #if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
+                #    log("Calling nodeutil.update()")
+                self.nodeutil.update()
 
 		#self.notification.show()
 		if self.nodeutil.status == "Updating":
@@ -381,19 +381,18 @@ class InternodeAwnApp:
 
 			self.overlay.props.active = True
 
-			log("Updated OK")
+			#log("Updated OK")
 
                 elif self.nodeutil.status == "Error":
-            		log("Update error: %s" % self.nodeutil.error)
+            		#log("Update error: %s" % self.nodeutil.error)
 			tiptext = self.nodeutil.error
 			self.overlay.props.active = False
 			self.update_image()
-                        #try to fetch data again...
-                        self.nodeutil.update()
+
 		else:
 			#self.label.set_text("??%")
                         log("Unknown NodeUtil Status: %s" % self.nodeutil.status)
-                        tiptext = "I dunno what the fuck happened!"
+                        tiptext = "??"
                         self.overlay.props.active = False
                         
 
