@@ -25,13 +25,14 @@ INTERNODE_NAME = 'Internode Usage Meter'
 
 INTERNODE_URL = 'http://www.users.on.net/~spohlenz/internode'
 
-INTERNODE_VERSION = '1.7'
+INTERNODE_VERSION = '2.0'
 
-INTERNODE_COPYRIGHT = '(C) 2009 Sam Pohlenz'
+INTERNODE_COPYRIGHT = '(C) 2011 Dale Maggee, (C) 2009 Sam Pohlenz'
 
 INTERNODE_DESCRIPTION = 'Applet for monitoring your Internode ADSL usage.'
 
 INTERNODE_AUTHORS = [
+        'Dale Maggee <antisol<at>internode(dot)on[dot]net>'
 	'Sam Pohlenz <retrix@internode.on.net>',
 	'Chris Scobell <chris@thescobells.com>'
 	]
