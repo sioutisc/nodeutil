@@ -159,33 +159,7 @@ class InternodeAwnApp:
 
                 #old code (move to NodeDialog):
                 """
-		stats = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "details_vbox")
-		stats.get_widget("graph_vbox").reparent(dialog)
-		details = stats.get_widget("details_vbox")
-
-		#vars for controls on the dialog...
-		self.progressbar = stats.get_widget("progressbar")
-		self.percent = stats.get_widget("percentage")
-		self.usage = stats.get_widget("usage")
-		self.heading = stats.get_widget("heading")
-		self.remaining = stats.get_widget("remaining")
-		self.remaining_mb = stats.get_widget("remaining_mb")
-		self.rate_per_day = stats.get_widget("rate_per_day")
-		self.suggested_speed = stats.get_widget("suggested_speed")
-
-		notebook = stats.get_widget("notebook")
-		"""
-		#add a history window to the details pane...
-		graph_window = HistoryWindow(self.nodeutil, self.ui_dir,self.main_dialog.notebook)
-
-		#request a graph taller than 2px...
-		graph_window.graph.set_size_request(0,200)
-
-		self.graph = graph_window
 		
-		self.main_dialog.notebook.set_tab_label_text(self.graph.vbox, "Chart")
-
-                """
                 #code for the alert editor:
                 
 		list = gtk.ListStore(int,str)
@@ -230,12 +204,6 @@ class InternodeAwnApp:
 		self.setup_context_menu()
 
 		applet.connect("clicked", self.on_clicked)
-
-		#icon = applet.get_icon()
-		#effect = awn.Effects(icon)
-
-		#self.update()
-		#self.nodeutil.do_update()
 
 		alertdlg = applet.dialog.new("alertdlg")
 		self.alert = NodeDialog_Alert(self.nodeutil,"This be an alert!",alertdlg,None,True)
@@ -313,8 +281,11 @@ class InternodeAwnApp:
                 #if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
                 #    log("Calling nodeutil.update()")
 
-                if widget:
-                    #responding to a signal - force nodeutil to update...
+                self.update_image()
+
+                if widget or self.nodeutil.status == "Error":
+                    #we're responding to a signal, or in an error state -
+                    #   force nodeutil to update...
                     force = True
                 else:
                     force = False
@@ -418,8 +389,9 @@ class InternodeAwnApp:
 		"""
 		Sets the icon to the appropriate image.
 		"""
+                #log("update_image status: '%s'" % self.nodeutil.status)
 
-		if self.nodeutil.status != "Error":
+		if self.nodeutil.status == "OK":
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
 				prefix = "u"

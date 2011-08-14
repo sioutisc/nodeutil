@@ -42,6 +42,7 @@ except ImportError:
 	sys.exit(1)
 
 from nodeutil import *
+from history_window import HistoryWindow
 
 def friendly_time(secs):
     
@@ -129,7 +130,7 @@ class NodeDialog:
                     self.parent.set_title(text)
             elif type(self.parent) == gtk.Notebook:
                 if self.controls:   #we need at least one child control to do this...
-                    self.parent.set_tab_label_text(self.controls, "Chart")
+                    self.parent.set_tab_label_text(self.controls, text)
 
         def get_widget(self,widget_name):
             """
@@ -166,9 +167,24 @@ class NodeDialog_Main(NodeDialog):
 		self.notebook = notebook
                 
 		self.parent.add(controls)
+
+                log("Creating chart")
+
+                #add a history window to the notebook...
+		graph_window = HistoryWindow(self.nodeutil,
+                    os.path.join(os.path.dirname(os.path.dirname(__file__))),self.notebook)
+
+		#request a graph taller than 2px...
+		graph_window.graph.set_size_request(0,200)
+
+		self.graph = graph_window
+
+		self.notebook.set_tab_label_text(self.graph.vbox, "Chart")
+
 			
 	def refresh(self):
             if self.nodeutil.status == "OK":
+                self.graph.fill_data()
                 self.get_widget("heading").set_markup(
                     '<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
 

@@ -211,7 +211,7 @@ class NodeUtil(object):
 
             return services
 
-        except IOError:
+        except:
             self.error = "Failed to fetch service data."
             self.status = "Error"
 
@@ -236,7 +236,7 @@ class NodeUtil(object):
 
             self.error = ""
 
-        except IOError:
+        except:
             self.error = "Failed to fetch usage data."
             self.status = "Error"
 
@@ -253,7 +253,7 @@ class NodeUtil(object):
                 mb = "%.6f" % (self.fetch_traffic_total(node) / 1024 / 1024)
                 self.history.append((date, mb))
 
-        except IOError:
+        except:
             self.error = "Failed to fetch usage data."
             self.status = "Error"
 
@@ -317,12 +317,15 @@ class NodeUtil(object):
         self.time = time.time()
 
         # Just get data for first service
-        service = self.get_services()[0]
-        self.get_usage(service)
-        self.get_history(service)
-        
-        if (self.status == "Updating"):
-            self.status = "OK"
+        try:
+            service = self.get_services()[0]
+            self.get_usage(service)
+            self.get_history(service)
+            if (self.status == "Updating"):
+                self.status = "OK"
+        except:
+            self.status = "Error"
+            self.error = "An unexpected error occurred"
 
         log("Nodeutil.update_thread_func() done")
         #thread.interrupt_main()

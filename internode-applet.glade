@@ -156,7 +156,6 @@
             </child>
             <child>
               <widget class="GtkLabel" id="label12">
-                <property name="visible">True</property>
                 <property name="xalign">1</property>
                 <property name="label" translatable="yes">On Click:</property>
               </widget>
@@ -170,7 +169,6 @@
             <child>
               <widget class="GtkRadioButton" id="show_detail">
                 <property name="label" translatable="yes">Show Details</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
@@ -188,7 +186,6 @@
             <child>
               <widget class="GtkRadioButton" id="dont_show_detail">
                 <property name="label" translatable="yes">Do Nothing</property>
-                <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="receives_default">False</property>
                 <property name="use_underline">True</property>
