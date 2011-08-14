@@ -27,6 +27,8 @@ In debug mode, several things happen:
 		(i.e: refresh once per minute, rather than once per hour)
 """
 
+INSANE_DEBUG = False
+
 SIMULATE_NETERROR=False
 """
 If True, NodeUtil will pretend like somebody just accidendally teh whole Intarwebs
@@ -195,7 +197,8 @@ class NodeUtil(object):
         These are called from within the update thread
     """
     def get_services(self):
-        #log("Retrieving services...")
+        if INSANE_DEBUG:
+            log("Retrieving services...")
         try:
             services = []
 
@@ -207,7 +210,7 @@ class NodeUtil(object):
                     'path': node.getAttribute('href')
                 })
 
-            #log("Services retrieved.")
+            if INSANE_DEBUG:log("Services retrieved.")
 
             return services
 
@@ -216,7 +219,7 @@ class NodeUtil(object):
             self.status = "Error"
 
     def get_usage(self, service):
-        #log("Retrieving usage...")
+        if INSANE_DEBUG:log("Retrieving usage...")
         try:
             dom = self.api_request("%s/usage" % service['path'])
 
@@ -232,7 +235,7 @@ class NodeUtil(object):
             self.daysleft = get_date_difference(traffic.getAttribute('rollover'))
 
             self.time = time.time()
-            #log( "Data updated for username %s." % self.username)
+            if INSANE_DEBUG:log( "Data updated for username %s." % self.username)
 
             self.error = ""
 
@@ -241,7 +244,7 @@ class NodeUtil(object):
             self.status = "Error"
 
     def get_history(self, service):
-        #log("Retrieving history...")
+        if INSANE_DEBUG:log("Retrieving history...")
         try:
             dom = self.api_request("%s/history" % service['path'])
 
@@ -302,16 +305,16 @@ class NodeUtil(object):
         if self.status != "Updating" and (
             (time.time() - self.update_interval > self.time) or force):
                 log("NodeUtil.update(%s)" % force)
-                #log("Spawning Thread...")
+                if INSANE_DEBUG:log("Spawning Thread...")
                 thread.start_new_thread(self.update_thread_func,())
-                #log("Thread Started.")
+                if INSANE_DEBUG:log("Thread Started.")
 
     def update_thread_func(self):
         """
         this function is our worker thread.
         it fetches data from teh internodes, updates our NodeUtil Properties, and exits
         """
-        #log("NodeUtil.update_thread_func()")
+        if INSANE_DEBUG:log("NodeUtil.update_thread_func()")
 
         self.status = "Updating"
         self.time = time.time()

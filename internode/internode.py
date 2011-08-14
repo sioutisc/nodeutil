@@ -43,6 +43,7 @@ try:
 	import gtk
 	import gtk.glade
 	import gtk.gdk
+        gtk.gdk.threads_init()
 except ImportError:
 	print "Failed to open GTKGlade libraries."
 	print "Please ensure they are installed correctly."
@@ -183,7 +184,7 @@ class InternodeMeter:
 			self.image.set_from_pixbuf(self.icons["x"])
 
 
-	def set_timeout(self, enable = True, interval = 5):
+	def set_timeout(self, enable = True, interval = 500):
 		"""
 		Sets or unsets the timeout to automatically update the usage meter
 		"""
@@ -199,6 +200,8 @@ class InternodeMeter:
 		Fetches the latest usage information and updates the display
 		"""
 
+                #print "update"
+
                 tiptext = "??"
                 if data:
                     force = True
@@ -209,7 +212,9 @@ class InternodeMeter:
                 self.update_image()
                 self.nodeutil.update(force)
 
-                if self.nodeutil.status == "OK":
+                status = self.nodeutil.status
+
+                if status == "OK":
                     if self.nodeutil.show_used:
                             percent = self.nodeutil.percent_used
                             usage = self.nodeutil.used
@@ -226,13 +231,15 @@ class InternodeMeter:
                     else:
                             daystring = 'days'
 
+                    self.update_image()
+
                     tiptext = "%.2f/%iMB %s\n%i %s remaining" % \
                             (usage, self.nodeutil.quota, status, self.nodeutil.daysleft, daystring)
 
-                elif self.nodeutil.status == "Updating":
+                elif status == "Updating":
                     tiptext = "Updating..."
                     
-                elif self.nodeutil.status == "Error":
+                elif status == "Error":
                     tiptext = "Error: %s" % self.nodeutil.error
                     self.label.set_text("??%")
                     self.update_image()
