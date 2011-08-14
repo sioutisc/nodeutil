@@ -152,6 +152,8 @@ class InternodeAwnApp:
 		#setup a main dialog for detailed info...
 		dialog = applet.dialog.new("main")
 		self.main_dialog = NodeDialog_Main(self.nodeutil,dialog)
+
+                self.main_dialog.on_refresh_click(self.update)
                 #self.main_dialog.show()
 
 
@@ -310,7 +312,14 @@ class InternodeAwnApp:
 
                 #if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
                 #    log("Calling nodeutil.update()")
-                self.nodeutil.update()
+
+                if widget:
+                    #responding to a signal - force nodeutil to update...
+                    force = True
+                else:
+                    force = False
+                    
+                self.nodeutil.update(force)
 
 		#self.notification.show()
 		if self.nodeutil.status == "Updating":

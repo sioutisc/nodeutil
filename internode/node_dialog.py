@@ -43,6 +43,34 @@ except ImportError:
 
 from nodeutil import *
 
+def friendly_time(secs):
+    
+    if secs < 60:
+        if int(secs) == 1:
+            unit = "second"
+        else:
+            unit = "seconds"
+        return "%1d %s" % (secs,unit)
+    elif secs < 3600:
+        mins = (secs / 60)
+        if int(mins) == 1:
+            unit = "minute"
+        else:
+            unit = "minutes"
+        return "%1d %s" % (mins,unit)
+    else:
+        hrs = (secs / 3600)
+        if int(hrs) == 1:
+            unit = "hour"
+        else:
+            unit = "hours"
+        
+        ret = ("%1d %s" % (hrs,unit))
+        if (secs % 3600):
+            ret = ret + " and " + friendly_time(secs % 3600)
+
+        return ret
+
 class NodeDialog:
 	"""
 	Base class for all Internode Dialogs
@@ -143,18 +171,34 @@ class NodeDialog_Main(NodeDialog):
             if self.nodeutil.status == "OK":
                 self.get_widget("heading").set_markup(
                     '<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
+
                 self.get_widget("usage_quota").set_markup(
                     '<span size="16000"><b>%2.2f</b> MB / <b>%2d</b> MB</span> used.' %
                     (self.nodeutil.used,self.nodeutil.quota))
+
                 self.get_widget("progressbar").set_fraction(self.nodeutil.used / self.nodeutil.quota)
-                self.get_widget("percentage").set_markup('<span size="16000"><i>%2.1f%%</i></span>' % ((self.nodeutil.used / self.nodeutil.quota) * 100))
+
+                self.get_widget("percentage").set_markup('<span size="16000"><i>%2.1f%%</i></span>' %
+                    ((self.nodeutil.used / self.nodeutil.quota) * 100))
+
                 self.get_widget("days_left").set_markup(
                     '<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
+
                 self.get_widget("mb_left").set_markup(
                     '<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
+
                 self.get_widget("rate_left").set_markup(
                     '<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' %
                         (self.nodeutil.remaining / self.nodeutil.daysleft))
+
+                rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
+
+                self.get_widget("rate_suggest").set_markup(
+                    'Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
+
+                secs = (time.time() - self.nodeutil.time)
+
+                self.get_widget("last_updated").set_markup("Last updated: %s ago" % friendly_time(secs))
 
 
 
@@ -177,6 +221,8 @@ class NodeDialog_Main(NodeDialog):
             self.remaining_mb.set_markup('<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
             self.rate_per_day.set_markup('<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' % rate_per_day)
             """
+        def on_refresh_click(self,callback):
+            self.get_widget("btnRefresh").connect("clicked",callback)
 
 
 class NodeDialog_Alert(NodeDialog):
