@@ -41,7 +41,7 @@ except ImportError:
 	print "Please ensure they are installed correctly."
 	sys.exit(1)
 
-from nodeutil import NodeUtil, UpdateError
+from nodeutil import *
 
 class NodeDialog:
 	"""
@@ -52,46 +52,65 @@ class NodeDialog:
 	"""
 	
 	def __init__(self, node, parent = None):
-		"""
-		creates a new NodeDialog
-		@node - nodeutil object
-		@parent - a gtk Container (gtk.Window or awn.Dialog)
-					if none is specified, the dialog will create a new window
-		"""
-		
-		self.nodeutil = node
+            """
+            creates a new NodeDialog
+            @node - nodeutil object
+            @parent - a gtk Container (gtk.Window or awn.Dialog)
+                                    if none is specified, the dialog will create a new window
+            """
 
-		#If no parent is provided, the dialog goes into a new GTK Window.
-		# If you do this, you'll want to call set_title()
-		if parent:
-			self.parent = parent
-		else:
-			self.parent = gtk.Window()
+            self.nodeutil = node
+
+            #subclasses of NodeDialog should populate these:
+            self.controls = None
+            #controls should usually be a vbox or the like - the main container for all controls
+            #   inside the dialog
+            self.glade = None
+            #glade should be the glade object for the dialog
+
+            #If no parent is provided, the dialog goes into a new GTK Window.
+            # If you do this, you'll want to call set_title()
+            if parent:
+                    self.parent = parent
+            else:
+                    self.parent = gtk.Window()
 		
 	def show(self):
-		"""
-		Shows the dialog
-		"""
-		self.parent.show_all()
+            """
+            Shows the dialog. this might not do what you'd expect if the
+                parent is something unusual
+            """
+            self.parent.show_all()
 		
 	def close(self, widget = None, data = None):
-		"""
-		Hides the dialog
-			Extra params are so this can be connected to a GTK signal
-		"""
-		self.parent.hide()
+            """
+            Hides the dialog
+                    Extra params are so this can be connected to a GTK signal
+            """
+            self.parent.hide()
 		
 	def set_title(self,text):
-		"""
-		sets the title of the Dialog
-			Handles different types of containers:
-			 - sets the title if parent is a gtk.Window
-			 - will one day set tab title if parent is a gtk.Notebook
-		"""
-		if type(self.parent) == gtk.Window:
-			self.parent.set_title(text)
-		elif type(self.parent) == gtk.Notebook:
-			print "TODO: set notebook tab title"
+            """
+            sets the title of the Dialog. Note that the dialog might not have a title,
+                in which case this doesn't do much
+            Handles different types of containers:
+             - sets the title if parent is a gtk.Window
+             - will one day set tab title if parent is a gtk.Notebook
+            """
+            if type(self.parent) == gtk.Window:
+                    self.parent.set_title(text)
+            elif type(self.parent) == gtk.Notebook:
+                if self.controls:   #we need at least one child control to do this...
+                    self.parent.set_tab_label_text(self.controls, "Chart")
+
+        def get_widget(self,widget_name):
+            """
+            shortcut to self.glade.get_widget
+            """
+            if self.glade:
+                return self.glade.get_widget(widget_name)
+            else:
+                return None
 
 class NodeDialog_Main(NodeDialog):
 	"""
@@ -112,11 +131,53 @@ class NodeDialog_Main(NodeDialog):
 		
 		notebook = glade.get_widget("notebook")
 		notebook.set_show_tabs(tabs_visible)
-		
+                
+                self.glade = glade
+                self.controls = controls
+
+		self.notebook = notebook
+                
 		self.parent.add(controls)
 			
 	def refresh(self):
-		print "refresh!"
+            if self.nodeutil.status == "OK":
+                self.get_widget("heading").set_markup(
+                    '<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
+                self.get_widget("usage_quota").set_markup(
+                    '<span size="16000"><b>%2.2f</b> MB / <b>%2d</b> MB</span> used.' %
+                    (self.nodeutil.used,self.nodeutil.quota))
+                self.get_widget("progressbar").set_fraction(self.nodeutil.used / self.nodeutil.quota)
+                self.get_widget("percentage").set_markup('<span size="16000"><i>%2.1f%%</i></span>' % ((self.nodeutil.used / self.nodeutil.quota) * 100))
+                self.get_widget("days_left").set_markup(
+                    '<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
+                self.get_widget("mb_left").set_markup(
+                    '<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
+                self.get_widget("rate_left").set_markup(
+                    '<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' %
+                        (self.nodeutil.remaining / self.nodeutil.daysleft))
+
+
+
+
+            """
+            self.progressbar.set_fraction(percent / float(100))
+
+            self.percent.set_markup('<span size="16000"><i>%3d%%</i></span>' % percent)
+
+            self.usage.set_markup('<span size="16000"><b>%2d</b> MB / <b>%2d</b> MB</span>' % (usage,self.nodeutil.quota))
+
+            self.heading.set_markup('<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
+
+            self.remaining.set_markup('<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
+
+            rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
+
+            self.suggested_speed.set_markup('Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
+
+            self.remaining_mb.set_markup('<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
+            self.rate_per_day.set_markup('<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' % rate_per_day)
+            """
+
 
 class NodeDialog_Alert(NodeDialog):
 	"""
@@ -138,6 +199,9 @@ class NodeDialog_Alert(NodeDialog):
 		btnOK.connect("clicked",self.close)
 		btnBuy = glade.get_widget("btnBuyData")
 		btnBuy.connect("clicked",self.buy_data)
+                
+                self.glade = glade
+                self.controls = controls
 		
 		self.set_text(text)
 		

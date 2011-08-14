@@ -111,15 +111,6 @@
             <property name="n_columns">3</property>
             <property name="row_spacing">2</property>
             <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
-              <placeholder/>
-            </child>
-            <child>
               <widget class="GtkLabel" id="label1">
                 <property name="visible">True</property>
                 <property name="xalign">1</property>
@@ -212,6 +203,15 @@
                 <property name="bottom_attach">2</property>
                 <property name="y_options">GTK_FILL</property>
               </packing>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
+            </child>
+            <child>
+              <placeholder/>
             </child>
           </widget>
           <packing>
@@ -480,7 +480,7 @@
             <child>
               <widget class="GtkLabel" id="heading">
                 <property name="visible">True</property>
-                <property name="label" translatable="yes">&lt;span size="12000"&gt;Internode Usage for: &lt;b&gt;antisol&lt;/b&gt;&lt;/span&gt;</property>
+                <property name="label" translatable="yes">&lt;span size="12000"&gt;Internode Usage for: &lt;b&gt;(username)&lt;/b&gt;&lt;/span&gt;</property>
                 <property name="use_markup">True</property>
                 <property name="single_line_mode">True</property>
               </widget>
@@ -518,7 +518,7 @@
                 <child>
                   <widget class="GtkLabel" id="percentage">
                     <property name="visible">True</property>
-                    <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;i&gt;100%&lt;/i&gt;&lt;/span&gt;</property>
+                    <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;i&gt;??%&lt;/i&gt;&lt;/span&gt;</property>
                     <property name="use_markup">True</property>
                     <property name="single_line_mode">True</property>
                   </widget>
@@ -532,9 +532,9 @@
                   <widget class="GtkVBox" id="vbox3">
                     <property name="visible">True</property>
                     <child>
-                      <widget class="GtkLabel" id="usage">
+                      <widget class="GtkLabel" id="usage_quota">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;50000&lt;/b&gt;MB / &lt;b&gt;50000&lt;/b&gt;MB&lt;/span&gt;</property>
+                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;??&lt;/b&gt; MB / &lt;b&gt;??&lt;/b&gt; MB&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -542,9 +542,9 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="remaining">
+                      <widget class="GtkLabel" id="days_left">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;30&lt;/b&gt;&lt;/span&gt; Days remaining</property>
+                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;??&lt;/b&gt;&lt;/span&gt; Days remaining</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -553,11 +553,11 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="remaining_mb">
+                      <widget class="GtkLabel" id="mb_left">
                         <property name="visible">True</property>
                         <property name="yalign">0.54000002145767212</property>
                         <property name="xpad">3</property>
-                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;50000&lt;/b&gt;MB &lt;/span&gt;remaining</property>
+                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;??&lt;/b&gt;MB &lt;/span&gt;remaining</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -565,9 +565,9 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="rate_per_day">
+                      <widget class="GtkLabel" id="rate_left">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;50000&lt;/b&gt;MB / Day&lt;/span&gt; remaining</property>
+                        <property name="label" translatable="yes">&lt;span size="16000"&gt;&lt;b&gt;??&lt;/b&gt;MB / Day&lt;/span&gt; remaining</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -575,9 +575,9 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="suggested_speed">
+                      <widget class="GtkLabel" id="rate_suggest">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Suggested download rate: &lt;span size="12000"&gt;&lt;b&gt;300&lt;/b&gt; KB/s&lt;/span&gt;</property>
+                        <property name="label" translatable="yes">Suggested download rate: &lt;span size="12000"&gt;&lt;b&gt;??&lt;/b&gt; KB/s&lt;/span&gt;</property>
                         <property name="use_markup">True</property>
                       </widget>
                       <packing>
@@ -586,9 +586,9 @@
                       </packing>
                     </child>
                     <child>
-                      <widget class="GtkLabel" id="lastupdate">
+                      <widget class="GtkLabel" id="last_updated">
                         <property name="visible">True</property>
-                        <property name="label" translatable="yes">Last Updated: 42 mins ago</property>
+                        <property name="label" translatable="yes">Last Updated: ?? mins ago</property>
                       </widget>
                       <packing>
                         <property name="position">5</property>

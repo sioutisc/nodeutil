@@ -38,6 +38,7 @@ try:
 	import gtk
 	import gtk.glade
 	import gtk.gdk as gdk
+	#gtk.gdk.threads_init()
 except ImportError:
 	print "Failed to open GTKGlade libraries."
 	print "Please ensure they are installed correctly."
@@ -59,8 +60,8 @@ except ImportError:
 	print "Failed to open AWN libraries."
 	print "Please ensure they are installed correctly"
 	sys.exit(1)
-	
-from internode.nodeutil import NodeUtil, UpdateError
+
+from internode.nodeutil import *
 from internode.history_window import HistoryWindow
 
 from internode.node_dialog import *
@@ -77,30 +78,16 @@ update_interval = 90
 
 #debugging mode. When this is on, log() does something,
 #	and there is a 'die' menu item for easy reloading during testing
-DEBUG=True
+#DEBUG=True
 
+#def log(text):
+#	"""
+#	Log a message with a timestamp
+#		does nothing in debug mode
+#	"""
+#	if DEBUG:
+#		print time.strftime("%Y-%m-%d %H:%M:%S") + " " + text
 
-"""
-#The following demonstrates a simple callback in python. we'll use this for nodeutil:
-
-def mert():
-	print "MERT!"
-	
-class Something:
-	@classmethod
-	def __init__(self,callback):
-		self.updatefunc = staticmethod(callback)
-		
-	@classmethod
-	def on_update(self):
-		self.updatefunc()
-		
-a = Something(mert)
-
-a.on_update()
-
-sys.exit(0)
-"""
 
 class InternodeAwnApp:
 	def __init__(self, applet):
@@ -108,35 +95,42 @@ class InternodeAwnApp:
 		Applet Init
 		"""
 
-		self.log("Internode Applet - Init")
+		log("Internode Applet - Init")
 
+                #awnlib applet object...
 		self.applet = applet
-		# set icon
-		self.applet.set_icon_name("internode-x")
 
+                #gconf client for retrieving gnome settings
 		self.gconf_client = gconf.client_get_default()
 
-		self.notification = applet.notify.create_notification("Alert", applet_logo, "dialog-warning", 20)
+                #HOWTO: show a notification:
+		#self.notification = applet.notify.create_notification("Alert", applet_logo, "dialog-warning", 20)
 		#self.notification.show()
 
+                #TODO: Replace this with a better way(tm) to do config
 		self.ui_dir = os.path.dirname(__file__)
 		self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
 
-		#self.log("UI Dir: '%s'" % self.ui_dir)
+		#log("UI Dir: '%s'" % self.ui_dir)
 
 		# set applet icon...
-		icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode.svg"))
+		self.init_images()
+
+		icon = self.icons["x"]
+                # or from a file:
+		#icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode.svg"))
 
 		applet.set_icon_pixbuf(icon)
 
-		self.init_images()
-
+                #tooltip...
 		applet.set_tooltip_text("Internode Usage Meter")
 
+                #nodeutil...
 		self.nodeutil = NodeUtil()
-		
-		self.nodeutil.on_status_change(self.status_changed)
-		
+
+		#self.nodeutil.on_status_change(self.status_changed)
+
+                #icon text overlay for displaying percentage...
 		self.overlay = awn.OverlayText()
 		self.overlay.props.gravity = gtk.gdk.GRAVITY_SOUTH
 		self.overlay.props.font_sizing = 18
@@ -144,6 +138,7 @@ class InternodeAwnApp:
 		self.overlay.props.active = False
 		applet.add_overlay(self.overlay)
 
+                #icon throbber for indicating 'fetching' status...
 		self.throbber = awn.OverlayThrobber()
 		self.throbber.props.scale = 0.75
 		self.throbber.props.gravity = gtk.gdk.GRAVITY_SOUTH_EAST
@@ -151,16 +146,21 @@ class InternodeAwnApp:
 		self.throbber.props.active = True
 		applet.add_overlay(self.throbber)
 
+                #get preferences...
 		self.load_prefs()
-		
+
 		#setup a main dialog for detailed info...
-		
 		dialog = applet.dialog.new("main")
-		
+		self.main_dialog = NodeDialog_Main(self.nodeutil,dialog)
+                #self.main_dialog.show()
+
+
+                #old code (move to NodeDialog):
+                """
 		stats = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "details_vbox")
-		#stats.get_widget("graph_vbox").reparent(dialog)
+		stats.get_widget("graph_vbox").reparent(dialog)
 		details = stats.get_widget("details_vbox")
-		
+
 		#vars for controls on the dialog...
 		self.progressbar = stats.get_widget("progressbar")
 		self.percent = stats.get_widget("percentage")
@@ -170,26 +170,29 @@ class InternodeAwnApp:
 		self.remaining_mb = stats.get_widget("remaining_mb")
 		self.rate_per_day = stats.get_widget("rate_per_day")
 		self.suggested_speed = stats.get_widget("suggested_speed")
-		
+
 		notebook = stats.get_widget("notebook")
-		
+		"""
 		#add a history window to the details pane...
-		graph_window = HistoryWindow(self.nodeutil, self.ui_dir,notebook)
-		
+		graph_window = HistoryWindow(self.nodeutil, self.ui_dir,self.main_dialog.notebook)
+
 		#request a graph taller than 2px...
 		graph_window.graph.set_size_request(0,200)
-		
+
 		self.graph = graph_window
 		
-		notebook.set_tab_label_text(self.graph.vbox, "Chart")
-		
+		self.main_dialog.notebook.set_tab_label_text(self.graph.vbox, "Chart")
+
+                """
+                #code for the alert editor:
+                
 		list = gtk.ListStore(int,str)
 		list.append([100,"You be capped!"])
 		list.append([90,"Internode usage is critically high!"])
 		list.append([75,"Three Quarters of your Internode data has been used!"])
 		list.append([50,"You've used half your Internode data!"])
 		list.append([0,"A New Month!"])
-		
+
 		##alertlist = stats.get_widget("alertlist")
 		#alertlist = gtk.TreeView(list)
 		alerts = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alerts_vbox")
@@ -197,102 +200,82 @@ class InternodeAwnApp:
 		alertlist = alerts.get_widget("alert_list")
 		alertlist.set_model(list)
 		alertlist.set_rules_hint(True)
-		
+
 		rendererText = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("At %", rendererText, text=0)
-		column.set_sort_column_id(0)    
+		column.set_sort_column_id(0)
 		alertlist.append_column(column)
 
 		rendererText = gtk.CellRendererText()
 		column = gtk.TreeViewColumn("Message", rendererText, text=1)
 		column.set_sort_column_id(1)
 		alertlist.append_column(column)
-		
+
 		notebook.append_page(alerts_box)
 		notebook.set_tab_label_text(alerts_box, "Alerts")
 		##alertlist.realize()
-		
-		dialog.add(details)
-		
-		#alert = applet.dialog.new("alert")
-		#alertglade = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_vbox")
-		#box = alertglade.get_widget("alert_vbox")
-		#alertglade.get_widget("btnOK").connect("clicked",self.close_alert)
-		#alertglade.get_widget("btnBuyData").connect("clicked",self.buy_data)
-		
-		#editor = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alert_editor")
-		#editor.get_widget("alert_editor").show_all()
 
-		#mert = gtk.Label("mert")
-		#alert.add(box)
-		
-		#self.alert = alert
-		
-		ic = stats.get_widget("icon")
-		#print ic.__class__.__name__
-		#print dir(ic)
+		dialog.add(details)
+
+                """
+
+		ic = self.main_dialog.get_widget("icon")
 		ic.set_from_pixbuf(self.logo)
-		
-		self.dialog = dialog
-		self.notebook = notebook
-		
+
+		#self.dialog = dialog
+		#self.notebook = notebook
+
 		self.setup_context_menu()
-		
-		#commented out - awnlib does this automagically
+
 		applet.connect("clicked", self.on_clicked)
 
 		#icon = applet.get_icon()
 		#effect = awn.Effects(icon)
 
 		#self.update()
-		
+		#self.nodeutil.do_update()
+
 		alertdlg = applet.dialog.new("alertdlg")
 		self.alert = NodeDialog_Alert(self.nodeutil,"This be an alert!",alertdlg,None,True)
-		
+
 		#we can now easily popup an alert with the likes of:
 		#	self.alert.set_text("Yo Momma!")
 		#	self.alert.show()
 		#or, more simply:
 		#	self.alert.show('MERT!')
 
-		applet.timing.register(self.update, update_interval * 60)
+		#applet.timing.register(self.update, update_interval * 60)
+                applet.timing.register(self.update, 10)
 		applet.timing.delay(self.update, 1.0)
-		
-		self.log("Init Complete")
+
+                self.nodeutil.update()
+
+		log("Init Complete")
 		#self.show_alert("Some text");
-		
+
 	def status_changed(self):
-		print "-------------------------------------------------------"
-		print "Status: %s (%s)" % (self.nodeutil.status, self.nodeutil.error)
-		self.update()
-		print "-------------------------------------------------------"
-		
+		log("-------------------------------------------------------")
+		log("Status is: %s (%s)" % (self.nodeutil.status, self.nodeutil.error))
+		#self.update()
+
 	def show_alert(self,text):
 		#TODO: set text on the alert
 		self.alert.show_all()
-	
+
 	def	close_alert(self, widget = None, data = None):
 		self.alert.hide()
-		
+
 	def buy_data(self, widget = None, data = None):
 		os.spawnlp(os.P_NOWAIT,"gnome-www-browser","gnome-www-browser",
 			"https://secure.internode.on.net/myinternode")
 		self.close_alert(widget,data)
-
-	def log(self,message):
-		"""
-		Logs a message to the logfile and/or screen, depending on DEBUG settings
-		"""
-
-		if DEBUG:
-			print "internode-applet: %s" % message
 
 	def load_prefs(self):
 		"""
 		Reads the username and password from the GConf registry
 		"""
 
-		self.log("Loading Preferences")
+		log("Loading Preferences")
 
 		username = self.gconf_client.get_string("/apps/internode-applet/username")
 		password = self.gconf_client.get_string("/apps/internode-applet/password")
@@ -303,7 +286,7 @@ class InternodeAwnApp:
 				username = ""
 			if password == None:
 				password = ""
-			self.log("missing preferences! showing dialog...")
+			log("missing preferences! showing dialog...")
 			self.show_prefs()
 		else:
 			self.nodeutil.username = username
@@ -316,25 +299,29 @@ class InternodeAwnApp:
 	def update(self, widget = None, data = None):
 		"""
 		Fetches the latest usage information and updates the display
-		
+
 		TODO: this should actually just update the awn applet based on the nodeutil's state
 		we should never actually need to call nodeutil.update()
-		
+
 		"""
 
-		self.log("Updating...")
+		log("Updating UI")
+		#log(self.nodeutil.status)
+
+                if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
+                    log("Calling nodeutil.update()")
+                    self.nodeutil.update()
 
 		#self.notification.show()
-		if self.nodeutil.status == "Fetching":
+		if self.nodeutil.status == "Updating":
 			self.overlay.props.active = False
 			self.throbber.props.active = True
-			tiptext = "Fetching..."
-			
+			tiptext = "Updating..."
+
 		elif self.nodeutil.status == "OK":
 			#self.nodeutil.do_update()
+                        self.throbber.props.active = False
 			self.update_image()
-				
-			self.nodeutil.lock.acquire()
 
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
@@ -360,46 +347,55 @@ class InternodeAwnApp:
 
 			self.overlay.props.text = "%i%%" % percent
 			#self.overlay.props.active = True
-			
+
+                        self.main_dialog.refresh()
+                        
+                        """
+
 			self.progressbar.set_fraction(percent / float(100))
-			
+
 			self.percent.set_markup('<span size="16000"><i>%3d%%</i></span>' % percent)
-			
+
 			self.usage.set_markup('<span size="16000"><b>%2d</b> MB / <b>%2d</b> MB</span>' % (usage,self.nodeutil.quota))
-			
+
 			self.heading.set_markup('<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
-			
+
 			self.remaining.set_markup('<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
-			
+
 			rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
-			
+
 			self.suggested_speed.set_markup('Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
-			
+
 			self.remaining_mb.set_markup('<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
 			self.rate_per_day.set_markup('<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' % rate_per_day)
 
 			#scroll graph to the end of the data...
 			#start = len(self.nodeutil.history) - (self.graph.days-1)
 			self.graph.fill_data()
-			#self.log("Start: %2d" % start)
-			
+			#log("Start: %2d" % start)
+
 			#self.graph.start = start
 			#self.graph.end = len(self.nodeutil.history)
-			self.nodeutil.lock.release()
-			
+
+                        """
+
 			self.overlay.props.active = True
-			self.throbber.props.active = False
 
-			self.log("Updated OK")
+			log("Updated OK")
 
-		#except UpdateError:
-		else:
-			# An error occurred
-			#self.label.set_text("??%")
-			self.log("Update error: %s" % self.nodeutil.error)
+                elif self.nodeutil.status == "Error":
+            		log("Update error: %s" % self.nodeutil.error)
 			tiptext = self.nodeutil.error
 			self.overlay.props.active = False
 			self.update_image()
+                        #try to fetch data again...
+                        self.nodeutil.update()
+		else:
+			#self.label.set_text("??%")
+                        log("Unknown NodeUtil Status: %s" % self.nodeutil.status)
+                        tiptext = "I dunno what the fuck happened!"
+                        self.overlay.props.active = False
+                        
 
 		#self.tooltips.set_tip(self.eventbox, tiptext)
 		self.applet.set_tooltip_text(tiptext)
@@ -415,7 +411,7 @@ class InternodeAwnApp:
 		Sets the icon to the appropriate image.
 		"""
 
-		if self.nodeutil.error == "":
+		if self.nodeutil.status != "Error":
 			if self.nodeutil.show_used:
 				percent = self.nodeutil.percent_used
 				prefix = "u"
@@ -475,8 +471,8 @@ class InternodeAwnApp:
 
 
 	def on_clicked(self, widget):
-		#self.log("Clicked")
-		self.notebook.set_current_page(0)
+		log("Clicked")
+		#self.notebook.set_current_page(0)
 		#self.graph.graph.refresh()
 
 
@@ -497,10 +493,10 @@ class InternodeAwnApp:
 		chart_item = gtk.MenuItem("Refresh")
 		chart_item.connect("activate",self.update)
 		menu.insert(chart_item,4)
-		
+
 		if DEBUG:
 			menu.insert(gtk.SeparatorMenuItem(), 5)
-			
+
 			chart_item = gtk.MenuItem("Die")
 			chart_item.connect("activate",self.exit)
 			menu.insert(chart_item,6)
