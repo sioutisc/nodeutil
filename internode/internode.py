@@ -123,6 +123,7 @@ class InternodeMeter:
 
 		# Initialize Internode Usage Checker
 		self.nodeutil = NodeUtil()
+		self.nodeutil.user_agent_text = "GNOME Applet"
 		self.load_prefs()
 
                 self.dialog = None
@@ -204,6 +205,7 @@ class InternodeMeter:
                 if not self.dialog:
                     self.dialog = NodeDialog_Main(self.nodeutil)
                     self.dialog.get_widget("icon").set_from_pixbuf(self.logo)
+                    self.dialog.parent.set_icon(self.logo)
                     self.dialog.refresh()
                     self.dialog.on_refresh_click(self.force_update)
                     self.dialog.parent.connect("destroy",self.dialog_closed)

@@ -45,32 +45,32 @@ from nodeutil import *
 from history_window import HistoryWindow
 
 def friendly_time(secs):
-    
-    if secs < 60:
-        if int(secs) == 1:
-            unit = "second"
-        else:
-            unit = "seconds"
-        return "%1d %s" % (secs,unit)
-    elif secs < 3600:
-        mins = (secs / 60)
-        if int(mins) == 1:
-            unit = "minute"
-        else:
-            unit = "minutes"
-        return "%1d %s" % (mins,unit)
-    else:
-        hrs = (secs / 3600)
-        if int(hrs) == 1:
-            unit = "hour"
-        else:
-            unit = "hours"
-        
-        ret = ("%1d %s" % (hrs,unit))
-        if (secs % 3600):
-            ret = ret + " and " + friendly_time(secs % 3600)
+	
+	if secs < 60:
+		if int(secs) == 1:
+			unit = "second"
+		else:
+			unit = "seconds"
+		return "%1d %s" % (secs,unit)
+	elif secs < 3600:
+		mins = (secs / 60)
+		if int(mins) == 1:
+			unit = "minute"
+		else:
+			unit = "minutes"
+		return "%1d %s" % (mins,unit)
+	else:
+		hrs = (secs / 3600)
+		if int(hrs) == 1:
+			unit = "hour"
+		else:
+			unit = "hours"
+		
+		ret = ("%1d %s" % (hrs,unit))
+		if (secs % 3600):
+			ret = ret + " and " + friendly_time(secs % 3600)
 
-        return ret
+		return ret
 
 class NodeDialog:
 	"""
@@ -81,65 +81,65 @@ class NodeDialog:
 	"""
 	
 	def __init__(self, node, parent = None):
-            """
-            creates a new NodeDialog
-            @node - nodeutil object
-            @parent - a gtk Container (gtk.Window or awn.Dialog)
-                                    if none is specified, the dialog will create a new window
-            """
+		"""
+		creates a new NodeDialog
+		@node - nodeutil object
+		@parent - a gtk Container (gtk.Window or awn.Dialog)
+								if none is specified, the dialog will create a new window
+		"""
 
-            self.nodeutil = node
+		self.nodeutil = node
 
-            #subclasses of NodeDialog should populate these:
-            self.controls = None
-            #controls should usually be a vbox or the like - the main container for all controls
-            #   inside the dialog
-            self.glade = None
-            #glade should be the glade object for the dialog
+		#subclasses of NodeDialog should populate these:
+		self.controls = None
+		#controls should usually be a vbox or the like - the main container for all controls
+		#	inside the dialog
+		self.glade = None
+		#glade should be the glade object for the dialog
 
-            #If no parent is provided, the dialog goes into a new GTK Window.
-            # If you do this, you'll want to call set_title()
-            if parent:
-                    self.parent = parent
-            else:
-                    self.parent = gtk.Window()
-		
+		#If no parent is provided, the dialog goes into a new GTK Window.
+		# If you do this, you'll want to call set_title()
+		if parent:
+			self.parent = parent
+		else:
+			self.parent = gtk.Window()
+
 	def show(self):
-            """
-            Shows the dialog. this might not do what you'd expect if the
-                parent is something unusual
-            """
-            self.parent.show_all()
-		
+		"""
+		Shows the dialog. this might not do what you'd expect if the
+			parent is something unusual
+		"""
+		self.parent.show_all()
+
 	def close(self, widget = None, data = None):
-            """
-            Hides the dialog
-                    Extra params are so this can be connected to a GTK signal
-            """
-            self.parent.hide()
+		"""
+		Hides the dialog
+				Extra params are so this can be connected to a GTK signal
+		"""
+		self.parent.hide()
 		
 	def set_title(self,text):
-            """
-            sets the title of the Dialog. Note that the dialog might not have a title,
-                in which case this doesn't do much
-            Handles different types of containers:
-             - sets the title if parent is a gtk.Window
-             - will one day set tab title if parent is a gtk.Notebook
-            """
-            if type(self.parent) == gtk.Window:
-                    self.parent.set_title(text)
-            elif type(self.parent) == gtk.Notebook:
-                if self.controls:   #we need at least one child control to do this...
-                    self.parent.set_tab_label_text(self.controls, text)
+		"""
+		sets the title of the Dialog. Note that the dialog might not have a title,
+			in which case this doesn't do much
+		Handles different types of containers:
+		 - sets the title if parent is a gtk.Window
+		 - will one day set tab title if parent is a gtk.Notebook
+		"""
+		if type(self.parent) == gtk.Window:
+			self.parent.set_title(text)
+		elif type(self.parent) == gtk.Notebook:
+			if self.controls:	#we need at least one child control to do this...
+				self.parent.set_tab_label_text(self.controls, text)
 
-        def get_widget(self,widget_name):
-            """
-            shortcut to self.glade.get_widget
-            """
-            if self.glade:
-                return self.glade.get_widget(widget_name)
-            else:
-                return None
+	def get_widget(self,widget_name):
+		"""
+		shortcut to self.glade.get_widget
+		"""
+		if self.glade:
+			return self.glade.get_widget(widget_name)
+		else:
+			return None
 
 class NodeDialog_Main(NodeDialog):
 	"""
@@ -160,101 +160,102 @@ class NodeDialog_Main(NodeDialog):
 		
 		notebook = glade.get_widget("notebook")
 		notebook.set_show_tabs(tabs_visible)
-                
-                self.glade = glade
-                self.controls = controls
+
+		glade.get_widget("btnCopyIP").connect("clicked",self.on_copy_ip_click)
+		glade.get_widget("lnkVersionCheck").set_uri('http://users.on.net/~antisol/nodeutil/version-check.php?v=%s' % VERSION)
+				
+		self.glade = glade
+		self.controls = controls
 
 		self.notebook = notebook
-                
+				
 		self.parent.add(controls)
 
-                log("Creating chart")
-
-                #add a history window to the notebook...
+		#add a history window to the notebook...
 		graph_window = HistoryWindow(self.nodeutil,
-                    os.path.join(os.path.dirname(os.path.dirname(__file__))),self.notebook)
+		os.path.join(os.path.dirname(os.path.dirname(__file__))),self.notebook)
 
 		#request a graph taller than 2px...
 		graph_window.graph.set_size_request(0,200)
 
 		self.graph = graph_window
-                self.graph_populated = False
+		self.graph_populated = False
 
 		self.notebook.set_tab_label_text(self.graph.vbox, "Chart")
 
+	def on_copy_ip_click(self,widget = None, data = None):
+		#copy IP to clipboard...
+		ip = self.get_widget("ip_addy").get_text()
+		clipboard = gtk.clipboard_get()
+		clipboard.set_text(ip)
+		# make our data available to other applications
+		clipboard.store()
 			
 	def refresh(self):
-            if self.nodeutil.status == "OK":
-                if self.graph_populated == False:
-                    #only do this once
-                    self.graph.fill_data()
-                    self.graph_populated = True
+		if self.nodeutil.status == "OK":
+			if self.graph_populated == False:
+				#only do this once
+				self.graph.fill_data()
+				self.graph_populated = True
 
-                self.get_widget("heading").set_markup(
-                    '<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
+			self.get_widget("heading").set_markup(
+				'<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
 
-                self.get_widget("usage_quota").set_markup(
-                    '<span size="16000"><b>%2.2f</b> MB / <b>%2d</b> MB</span> used.' %
-                    (self.nodeutil.used,self.nodeutil.quota))
+			self.get_widget("usage_quota").set_markup(
+				'<span size="16000"><b>%2.2f</b> MB / <b>%2d</b> MB</span> used.' %
+				(self.nodeutil.used,self.nodeutil.quota))
 
-                self.get_widget("progressbar").set_fraction(self.nodeutil.used / self.nodeutil.quota)
+			self.get_widget("progressbar").set_fraction(self.nodeutil.used / self.nodeutil.quota)
 
-                self.get_widget("percentage").set_markup('<span size="16000"><i>%2.1f%%</i></span>' %
-                    ((self.nodeutil.used / self.nodeutil.quota) * 100))
+			self.get_widget("percentage").set_markup('<span size="16000"><i>%2.1f%%</i></span>' %
+				((self.nodeutil.used / self.nodeutil.quota) * 100))
 
-                self.get_widget("days_left").set_markup(
-                    '<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
+			self.get_widget("days_left").set_markup(
+				'<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
 
-                self.get_widget("mb_left").set_markup(
-                    '<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
+			self.get_widget("mb_left").set_markup(
+				'<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
 
-                self.get_widget("rate_left").set_markup(
-                    '<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' %
-                        (self.nodeutil.remaining / self.nodeutil.daysleft))
+			self.get_widget("rate_left").set_markup(
+				'<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' %
+					(self.nodeutil.remaining / self.nodeutil.daysleft))
 
-                rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
+			rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
 
-                self.get_widget("rate_suggest").set_markup(
-                    'Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
+			self.get_widget("rate_suggest").set_markup(
+				'Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
 
-                secs = (time.time() - self.nodeutil.time)
+			secs = (time.time() - self.nodeutil.time)
 
-                self.get_widget("last_updated").set_markup("Last updated: %s ago" % friendly_time(secs))
-            elif self.nodeutil.status == "Updating":
-                self.get_widget("last_updated").set_markup("Last updated: <b><i>Updating Now!</i></b>")
-            elif self.nodeutil.status == "Error":
-                self.graph_populated = False
+			self.get_widget("last_updated").set_markup("Last updated: %s ago" % friendly_time(secs))
 
+			self.get_widget("plan_name").set_markup("<b>%s</b>" % self.nodeutil.plan)
+			self.get_widget("plan_type").set_markup("<b>%s</b>" % self.nodeutil.plan_interval)
+			self.get_widget("plan_speed").set_markup("<b>%s</b>" % self.nodeutil.speed)
+			self.get_widget("carrier").set_markup("<b>%s</b>" % self.nodeutil.carrier)
+			if self.nodeutil.uploads_charged:
+				txt = "Yes"
+			else:
+				txt = "No"
 
+			self.get_widget("uploads_metered").set_markup("<b>%s</b>" % txt)
+			self.get_widget("rollover_date").set_markup("<b>%s</b>" % self.nodeutil.rollover)
+			self.get_widget("ip_addy").set_markup("<b>%s</b>" % self.nodeutil.ip)
 
+		elif self.nodeutil.status == "Updating":
+			self.get_widget("last_updated").set_markup("Last updated: <b><i>Updating Now!</i></b>")
 
-            """
-            self.progressbar.set_fraction(percent / float(100))
+		elif self.nodeutil.status == "Error":
+			self.graph_populated = False
 
-            self.percent.set_markup('<span size="16000"><i>%3d%%</i></span>' % percent)
+	def on_refresh_click(self,callback):
+		self.get_widget("btnRefresh").connect("clicked",callback)
 
-            self.usage.set_markup('<span size="16000"><b>%2d</b> MB / <b>%2d</b> MB</span>' % (usage,self.nodeutil.quota))
-
-            self.heading.set_markup('<span size="12000">Internode Usage for: <b>%s</b></span>' % self.nodeutil.username)
-
-            self.remaining.set_markup('<span size="16000"><b>%2d</b></span> Days remaining' % self.nodeutil.daysleft)
-
-            rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
-
-            self.suggested_speed.set_markup('Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)
-
-            self.remaining_mb.set_markup('<span size="16000"><b>%2d</b> MB </span>remaining' % self.nodeutil.remaining)
-            self.rate_per_day.set_markup('<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' % rate_per_day)
-            """
-        def on_refresh_click(self,callback):
-            self.get_widget("btnRefresh").connect("clicked",callback)
-
-
-class NodeDialog_Alert(NodeDialog):
+class NodeDialog_UsageAlert(NodeDialog):
 	"""
 	The Internode Alert Dialog - custom text, usage levels, with 'buy data' and 'ok' buttons
 	"""
-	def __init__(self,node,text,parent = None, title = "Internode Usage Alert", hidden = False):
+	def __init__(self,node,parent = None, title = "Internode Usage Alert", text = None, hidden = False):
 		NodeDialog.__init__(self,node,parent)
 		
 		if not parent:
@@ -269,23 +270,28 @@ class NodeDialog_Alert(NodeDialog):
 		btnOK = glade.get_widget("btnOK")
 		btnOK.connect("clicked",self.close)
 		btnBuy = glade.get_widget("btnBuyData")
-		btnBuy.connect("clicked",self.buy_data)
-                
-                self.glade = glade
-                self.controls = controls
-		
-		self.set_text(text)
+		self.handler = btnBuy.connect("clicked",self.buy_data)
+				
+		self.glade = glade
+		self.controls = controls
+		self.show_usage_data = True
+
+		if text:
+			self.set_text(text)
 		
 		self.parent.add(controls)
 		
 		if not hidden:
 			self.parent.show_all()
 		
-	def show(self, text = None):
+	def show(self, text = None, show_usage = None):
 		"""
 		Shows the dialog.
 		@text - if specified, sets the alert text first
 		"""
+		if show_usage != None:
+			self.show_usage_data = show_usage
+			
 		if text:
 			self.set_text(text)
 		NodeDialog.show(self)
@@ -297,12 +303,15 @@ class NodeDialog_Alert(NodeDialog):
 		try:
 			#self.nodeutil.update()
 			if self.nodeutil.status == "OK":
-				self.label.set_markup('<span size="14000">%s</span>\n\
-					\nYour internode usage for this month has reached <b>%2d%%</b>!\n\
-					\nYou have <b>%2d</b> MB remaining over %2d days, or <b>%2.2f</b> MB / day' % 
-					(text, self.nodeutil.percent_used, self.nodeutil.remaining, self.nodeutil.daysleft, 
-						(self.nodeutil.remaining / self.nodeutil.daysleft) )
+				if self.show_usage_data:
+					self.label.set_markup('<span size="14000">%s</span>\n\
+						\nYour internode usage for this month has reached <b>%2d%%</b>!\n\
+						\nYou have <b>%2d</b> MB remaining over %2d days, or <b>%2.2f</b> MB / day' %
+						(text, self.nodeutil.percent_used, self.nodeutil.remaining, self.nodeutil.daysleft,
+							(self.nodeutil.remaining / self.nodeutil.daysleft) )
 				)
+				else:
+					self.label.set_markup('<span size="14000">%s</span>' % text)
 			else:
 				self.label.set_markup('<span size="14000">%s</span>\n\n%s' % (text, self.nodeutil.error))
 		except UpdateError:
@@ -310,10 +319,63 @@ class NodeDialog_Alert(NodeDialog):
 
 		
 	def buy_data(self, widget = None, data = None):
-		os.spawnlp(os.P_NOWAIT,"gnome-www-browser","gnome-www-browser",
-			"https://secure.internode.on.net/myinternode")
+		os.spawnlp(os.P_NOWAIT,"xdg-open","xdg-open",
+			"https://secure.internode.on.net/myinternode/sys2/blockscwt/purchaseBlocks.action")
 		self.close()
-		
+
+class NodeDialog_Alert(NodeDialog_UsageAlert):
+	"""
+	A More generalised Alert Message
+	"""
+	def __init__(self,node,parent = None, title = "Internode Usage Alert", markup = None, hidden = False):
+		#we don't pass 'hidden' off to the parent's constructor, we'll implement that later - 
+		#	(we might want to change things between creation and showing)
+		NodeDialog_UsageAlert.__init__(self,node,parent, title, None, False)
+
+		#NodeDialog.__init__(self,node,parent)
+		if False:
+			if not parent:
+				self.set_title(title)
+				self.parent.set_position(gtk.WIN_POS_CENTER)
+
+			self.ui_file = os.path.join(os.path.dirname(os.path.dirname(__file__)),'internode-applet.glade')
+
+			glade = gtk.glade.XML(self.ui_file, "alert_vbox")
+			controls = glade.get_widget("alert_vbox")
+			self.label = glade.get_widget("message")
+
+		btnOK = self.get_widget("btnOK")
+		btnOK.connect("clicked",self.close)
+		btnOK.set_label("Meh")
+		btnBuy = self.get_widget("btnBuyData")
+		btnBuy.set_label("Download Now...")
+		btnBuy.disconnect(self.handler)
+		btnBuy.connect("clicked",self.download)
+				
+		#self.glade = glade
+		#self.controls = controls
+		#self.show_usage_data = True
+
+		if markup:
+			self.set_markup(markup)
+
+
+		#self.parent.add(controls)
+
+		if not hidden:
+			self.show()
+
+	def download(self,widget = None,data = None):
+		os.spawnlp(os.P_NOWAIT,"xdg-open","xdg-open",
+			"http://users.on.net/~antisol/nodeutil/")
+		self.close()
+
+	def set_text(self,text):
+		self.label.set_markup('<span size="14000">%s</span>' % text)
+
+	def set_markup(self,markup):
+		self.label.set_markup(markup)
+
 class NodeDialog_Config(NodeDialog):
 	"""
 	The configuration dialog
@@ -333,6 +395,44 @@ class NodeDialog_AlertEditor(NodeDialog):
 	Also encapsulates the 'Edit an Alert' Dialog
 	"""
 	
+	"""
+
+	#code for the alert editor:
+
+	list = gtk.ListStore(int,str)
+	list.append([100,"You be capped!"])
+	list.append([90,"Internode usage is critically high!"])
+	list.append([75,"Three Quarters of your Internode data has been used!"])
+	list.append([50,"You've used half your Internode data!"])
+	list.append([0,"A New Month!"])
+
+	##alertlist = stats.get_widget("alertlist")
+	#alertlist = gtk.TreeView(list)
+	alerts = gtk.glade.XML(os.path.join(self.ui_dir,"internode-applet.glade"), "alerts_vbox")
+	alerts_box = alerts.get_widget("alerts_vbox")
+	alertlist = alerts.get_widget("alert_list")
+	alertlist.set_model(list)
+	alertlist.set_rules_hint(True)
+
+	rendererText = gtk.CellRendererText()
+	column = gtk.TreeViewColumn("At %", rendererText, text=0)
+	column.set_sort_column_id(0)
+	alertlist.append_column(column)
+
+	rendererText = gtk.CellRendererText()
+	column = gtk.TreeViewColumn("Message", rendererText, text=1)
+	column.set_sort_column_id(1)
+	alertlist.append_column(column)
+
+	notebook.append_page(alerts_box)
+	notebook.set_tab_label_text(alerts_box, "Alerts")
+	##alertlist.realize()
+
+	dialog.add(details)
+
+	"""
+
+
 class NodeIcons:
 	"""
 	NodeIcons Class
