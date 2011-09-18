@@ -47,7 +47,8 @@ Internode uses 1000 (50000 bytes = 50 Kb), some people prefer si units: 1024
 def log(text):
 	"""
 	Log a message with a timestamp
-		does nothing in debug mode
+		if LOGFILE is set, log() will append to that file
+		if DEBUG is set log() will (also) output to stdout
 	"""
 	ln = time.strftime("%Y-%m-%d %H:%M:%S") + ": " + text
 	if LOGFILE:
@@ -58,7 +59,8 @@ def log(text):
 			#cannot write to logfile...
 			print time.strftime("%Y-%m-%d %H:%M:%S") + (": *** ERROR: Cannot log to file: '%s'. Check permissions?" % LOGFILE)
 			print ln
-	elif DEBUG:
+
+	if DEBUG:
 		print ln
 
 class UpdateError(Exception):

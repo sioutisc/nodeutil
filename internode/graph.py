@@ -3,6 +3,7 @@
 import gobject
 import pango
 import gtk
+import datetime
 from gtk import gdk
 try:
     import cairo
@@ -197,7 +198,8 @@ class Graph(gtk.Widget):
 
 		if len(self.data) == 0: return
 					
-		colno = self.selected_col(event.x)        
+		colno = self.selected_col(event.x)
+		
 		if colno > len(self.data) or colno <= 0: return       
 		if colno == self.selected: return
 

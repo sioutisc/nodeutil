@@ -21,6 +21,7 @@ import os.path
 # along with this program.	If not, see <http://www.gnu.org/licenses/>.
 
 import time
+import datetime
 import sys
 import os
 
@@ -471,13 +472,13 @@ class NodeDialog_Chart(NodeDialog):
 	def select(self, widget, event):
 		colour = (0.7,0.7,1)
 		colval = self.graph.highlight_col(event, colour)
-
+		
 		if colval != None:
 			try:
 				day = int(colval[0][4:])
 				month = int(colval[0][2:4])
 				year = int(colval[0][:2]) + 2000
-				usage_date = date(year, month, day)
+				usage_date = datetime.date(year, month, day)
 				date_label = usage_date.strftime("%a %b %d %Y")
 				usage_label = str(int(round(colval[1]))) + " MB"
 			except TypeError:
