@@ -29,7 +29,6 @@ TODO ITEMS:
 
 """
 
-from internode.node_dialog import NodeDialog_Chart
 from internode.node_dialog import *
 import time
 import sys
@@ -70,9 +69,6 @@ applet_name = "Internode Usage Meter"
 applet_version = "0.0.2"
 applet_description = "Monitors your Internode ADSL usage"
 
-# Or provide the path to your own logo:
-applet_logo = os.path.join(os.path.dirname(__file__), "pixmaps","logo.png")
-
 #how often (mins) should we update?
 update_interval = 90
 
@@ -91,23 +87,14 @@ class InternodeAwnApp:
 		self.gconf_client = gconf.client_get_default()
 
 		#HOWTO: show a notification:
-		#self.notification = applet.notify.create_notification("Alert", applet_logo, "dialog-warning", 20)
+		#self.notification = applet.notify.create_notification("Alert", NodeIcons.logo, "dialog-warning", 20)
 		#self.notification.show()
 
 		#TODO: Replace this with a better way(tm) to do config
 		self.ui_dir = os.path.dirname(__file__)
-		self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
+		#self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
 
-		#log("UI Dir: '%s'" % self.ui_dir)
-
-		# set applet icon...
-		self.init_images()
-
-		icon = self.icons["x"]
-		# or from a file:
-		#icon = gdk.pixbuf_new_from_file(os.path.join(self.pixmap_dir,"internode.svg"))
-
-		applet.set_icon_pixbuf(icon)
+		applet.set_icon_pixbuf(NodeIcons.icons["x"])
 
 		#tooltip...
 		applet.set_tooltip_text("Internode Usage Meter")
@@ -158,7 +145,7 @@ class InternodeAwnApp:
 		#self.main_dialog.show()
 
 		ic = self.main_dialog.get_widget("icon")
-		ic.set_from_pixbuf(self.logo)
+		ic.set_from_pixbuf(NodeIcons.logo)
 
 		self.setup_context_menu()
 
@@ -223,43 +210,37 @@ class InternodeAwnApp:
 
 	def update(self, widget = None, data = None):
 		"""
-		Fetches the latest usage information and updates the display
+		Updates the awn applet display.
 
-		TODO: this should actually just update the awn applet based on the nodeutil's state
-		we should never actually need to call nodeutil.update()
+		Note that while the applet calls nodeutil.update() regularlu (every 2s),
+			nodeutil will only spawn an update thread every half hour, unless force
+			is True.
 
 		"""
 
-		#log("Updating UI")
-		#log(self.nodeutil.status)
-
-		#if self.nodeutil.status == "OK" and (time.time() - 60 > self.nodeutil.time):
-		#	 log("Calling nodeutil.update()")
-
+		#set applet image according to status
 		self.update_image()
-
-		if widget or self.nodeutil.status == "Error":
-			#TODO: make it not spam teh nodes every 2s when there's an error condition
-			
-			#we're responding to a signal, or in an error state -
-			#	force nodeutil to update...
-			force = True
-		else:
-			force = False
-					
-		self.nodeutil.update(force)
 
 		#we only read this once (to prevent odd states where status changes while we're updating)
 		status = self.nodeutil.status
 
-		#self.notification.show()
+		#if we're responding to a signal (i.e: click on 'update'), force nodeutil to update...
+		force = True if widget else False
+		
+		#when we're in an error state, force a retry after 10 mins.
+		if (status == "Error") and (
+			(time.time() - self.nodeutil.time) > 600):
+				force = True
+				
+		self.nodeutil.update(force)
+
+		#now that we've called nodeutil.update, we update the display...
 		if status == "Updating":
 			self.overlay.props.active = False
 			self.throbber.props.active = True
 			tiptext = "Updating..."
 
 		elif status == "OK":
-			#self.nodeutil.do_update()
 			self.throbber.props.active = False
 			self.update_image()
 
@@ -271,8 +252,6 @@ class InternodeAwnApp:
 				percent = self.nodeutil.percent_remaining
 				usage = self.nodeutil.remaining
 				status = "remaining"
-
-			#self.label.set_text("%i%%" % percent)
 
 			if self.nodeutil.daysleft == 1:
 				daystring = 'day'
@@ -286,8 +265,6 @@ class InternodeAwnApp:
 					daystring,rate_per_day,friendly_time(time.time() - self.nodeutil.time))
 
 			self.overlay.props.text = "%i%%" % percent
-			#self.overlay.props.active = True
-
 			self.main_dialog.refresh()
 						
 			"""
@@ -342,49 +319,20 @@ class InternodeAwnApp:
 
 			# No error
 			if percent > 87:
-				icon = self.icons[prefix + "100"]
+				icon = NodeIcons.icons[prefix + "100"]
 			elif percent > 62:
-				icon = self.icons[prefix + "75"]
+				icon = NodeIcons.icons[prefix + "75"]
 			elif percent > 37:
-				icon = self.icons[prefix + "50"]
+				icon = NodeIcons.icons[prefix + "50"]
 			elif percent > 12:
-				icon = self.icons[prefix + "25"]
+				icon = NodeIcons.icons[prefix + "25"]
 			else:
-				icon = self.icons[prefix + "0"]
+				icon = NodeIcons.icons[prefix + "0"]
 		else:
 			# Show error image
-			icon = self.icons["x"]
+			icon = NodeIcons.icons["x"]
 
 		self.applet.set_icon_pixbuf(icon)
-
-
-	def init_images(self):
-		"""
-		Initialises the icons and images used by the usage meter
-		"""
-
-		self.icons = {}
-
-		# Show Percentage Remaining icons
-		self.icons["0"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-0.png")
-		self.icons["25"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-25.png")
-		self.icons["50"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-50.png")
-		self.icons["75"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-75.png")
-		self.icons["100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-100.png")
-		self.icons["x"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-x.png")
-
-		# Show Percentage Used icons
-		self.icons["u0"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u0.png")
-		self.icons["u25"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u25.png")
-		self.icons["u50"] = self.icons["50"]
-		self.icons["u75"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u75.png")
-		self.icons["u100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u100.png")
-
-		# About logo
-		self.logo_large = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
-		#smaller logo
-		self.logo = gtk.gdk.pixbuf_new_from_file_at_size(self.pixmap_dir + "/internode.svg", 44, 48)
-
 
 	def show_graph(self, widget = None, data = None):
 		"""
@@ -476,7 +424,7 @@ if __name__ == "__main__":
 		"short": "Internode Usage Meter",
 		"version": applet_version,
 		"description": applet_description,
-		"logo": applet_logo,
+		"logo": NodeIcons.logo_path,
 		"author": "Dale Maggee",
 		"copyright-year": 2011,
 		"authors": ["Dale Maggee", "Sam Pohlenz"]})

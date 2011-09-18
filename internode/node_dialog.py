@@ -683,24 +683,33 @@ class NodeDialog_AlertEditor(NodeDialog):
 		self.set_title("Alerts")
 		self.parent.show_all()
 
-
 class NodeIcons:
 	"""
 	NodeIcons Class
 	Auto-loads and holds the icons used by the Internode Meter
 	"""
-	def __init__(self, node):
-		self.nodeutil = node
-		#TODO: Load icons from pixmaps into an array of pixbufs
-		
-	def get_current_icon(self):
-		"""
-		Returns a pixbuf representing the Icon we should be using, according to 
-			settings / the current status / usage level
-		"""
-		
-	def get_icon(self,icon_id):
-		"""
-		returns the specified icon
-		"""
-		
+	log("NodeIcons Init")
+	icons = {}
+
+	#Percentage Remaining icons
+	icons["0"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-0.png"))
+	icons["25"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-25.png"))
+	icons["50"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-50.png"))
+	icons["75"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-75.png"))
+	icons["100"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-100.png"))
+	icons["x"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-x.png"))
+
+	#Percentage Used icons
+	icons["u0"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u0.png"))
+	icons["u25"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u25.png"))
+	icons["u50"] = icons["50"]
+	icons["u75"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u75.png"))
+	icons["u100"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u100.png"))
+
+	logo_path = os.path.join(PIXMAP_PATH, "internode.svg")
+	# About logo
+	logo_large = gtk.gdk.pixbuf_new_from_file(logo_path)
+	#smaller logo
+	logo = gtk.gdk.pixbuf_new_from_file_at_size(logo_path, 44, 48)
+
+	log("%2d Icons Loaded." % (len(icons) + 2))
