@@ -212,9 +212,9 @@ class InternodeAwnApp:
 		"""
 		Updates the awn applet display.
 
-		Note that while the applet calls nodeutil.update() regularlu (every 2s),
+		Note that while this function calls nodeutil.update() regularlu (every 2s),
 			nodeutil will only spawn an update thread every half hour, unless force
-			is True.
+			is True (i.e: the timing of the fetch is usually handled by nodeutil, not here)
 
 		"""
 
@@ -287,6 +287,7 @@ class InternodeAwnApp:
 			#log("Update error: %s" % self.nodeutil.error)
 			tiptext = self.nodeutil.error
 			self.overlay.props.active = False
+			self.throbber.props.active = False
 			self.update_image()
 
 		else:

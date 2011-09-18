@@ -36,6 +36,10 @@ SIMULATE_NETERROR=False
 """
 If True, NodeUtil will pretend like somebody just accidendally teh whole Intarwebs
 """
+NETERR_MSG="*** Simulating a network error ***"
+"""
+String to spit to log when simulating a network error
+"""
 
 ONE_KB = 1000
 """
@@ -413,7 +417,8 @@ class NodeUtil(object):
 		try:
 			if SIMULATE_NETERROR:
 				#fake an error
-				log("Simulating a network error")
+				log(NETERR_MSG)
+				time.sleep(5)
 				raise IOError
 
 			request = urllib2.Request("https://customer-webtools-api.internode.on.net/cgi-bin/showmyip")
@@ -441,7 +446,8 @@ class NodeUtil(object):
 
 			if SIMULATE_NETERROR:
 				#fake an error
-				log("Simulating a network error")
+				log(NETERR_MSG)
+				time.sleep(5)
 				raise IOError
 
 			request = urllib2.Request("http://users.on.net/~antisol/nodeutil/version-check.php?t=1")
@@ -466,8 +472,8 @@ class NodeUtil(object):
 	def api_request(self, path):
 		log("NodeUtil.api_request('%s')" % path)
 		if SIMULATE_NETERROR:
-			#fake an error
-			log("Simulating a network error")
+			log(NETERR_MSG)
+			time.sleep(5)
 			raise IOError
 		request = urllib2.Request("%s%s" % (self.api_host, path))
 		user_agent = ('NodeUtil/%02.1f (%s)' % (VERSION,self.user_agent_text))

@@ -90,12 +90,9 @@ class InternodeMeter:
 		# Initialize GConf
 		self.gconf_client = gconf.client_get_default()
 
-		# Initialize images
-		self.init_images()
-
 		# Initialize GTK widgets
 		self.image = gtk.Image()
-		self.image.set_from_pixbuf(self.icons["x"])
+		self.image.set_from_pixbuf(NodeIcons.icons["x"])
 		self.label = gtk.Label("??%")
 		self.eventbox = gtk.EventBox()
 		self.hbox = gtk.HBox()
@@ -124,41 +121,11 @@ class InternodeMeter:
 		self.nodeutil = NodeUtil()
 		self.nodeutil.user_agent_text = "GNOME Applet"
 		self.load_prefs()
-
-                self.dialog = None
-
-                applet.connect("button-press-event",self.on_clicked)
+		self.dialog = None
+		applet.connect("button-press-event",self.on_clicked)
 
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
-
-
-	def init_images(self):
-		"""
-		Initialises the icons and images used by the usage meter
-		"""
-
-		self.icons = {}
-		
-		# Show Percentage Remaining icons
-		self.icons["0"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-0.png")
-		self.icons["25"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-25.png")
-		self.icons["50"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-50.png")
-		self.icons["75"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-75.png")
-		self.icons["100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-100.png")
-		self.icons["x"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-x.png")
-
-		# Show Percentage Used icons
-		self.icons["u0"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u0.png")
-		self.icons["u25"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u25.png")
-		self.icons["u50"] = self.icons["50"]
-		self.icons["u75"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u75.png")
-		self.icons["u100"] = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode-u100.png")
-
-		# About logo
-		self.logo_large = gtk.gdk.pixbuf_new_from_file(self.pixmap_dir + "/internode.svg")
-                self.logo = gtk.gdk.pixbuf_new_from_file_at_size(self.pixmap_dir + "/internode.svg", 44, 48)
-
 
 	def update_image(self):
 		"""
@@ -175,18 +142,18 @@ class InternodeMeter:
 			
 			# No error
 			if percent > 87:
-				self.image.set_from_pixbuf(self.icons[prefix + "100"])
+				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "100"])
 			elif percent > 62:
-				self.image.set_from_pixbuf(self.icons[prefix + "75"])
+				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "75"])
 			elif percent > 37:
-				self.image.set_from_pixbuf(self.icons[prefix + "50"])
+				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "50"])
 			elif percent > 12:
-				self.image.set_from_pixbuf(self.icons[prefix + "25"])
+				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "25"])
 			else:
-				self.image.set_from_pixbuf(self.icons[prefix + "0"])
+				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "0"])
 		else:
 			# Show error image
-			self.image.set_from_pixbuf(self.icons["x"])
+			self.image.set_from_pixbuf(NodeIcons.icons["x"])
 
 
 	def set_timeout(self, enable = True, interval = 500):
@@ -203,8 +170,8 @@ class InternodeMeter:
             if event.type == gtk.gdk.BUTTON_PRESS and event.button == 1:
                 if not self.dialog:
                     self.dialog = NodeDialog_Main(self.nodeutil)
-                    self.dialog.get_widget("icon").set_from_pixbuf(self.logo)
-                    self.dialog.parent.set_icon(self.logo)
+                    self.dialog.get_widget("icon").set_from_pixbuf(NodeIcons.logo)
+                    self.dialog.parent.set_icon(NodeIcons.logo)
                     self.dialog.refresh()
                     self.dialog.on_refresh_click(self.force_update)
                     self.dialog.parent.connect("destroy",self.dialog_closed)
@@ -290,7 +257,7 @@ class InternodeMeter:
 
 		about = gnome.ui.About(INTERNODE_NAME, INTERNODE_VERSION, INTERNODE_COPYRIGHT,
 			INTERNODE_DESCRIPTION, INTERNODE_AUTHORS, None,
-			None, self.logo)
+			None, NodeIcons.logo)
 
 		result = about.run()
 		
