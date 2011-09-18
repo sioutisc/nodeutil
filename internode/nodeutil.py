@@ -14,16 +14,18 @@ import thread
 import threading
 
 VERSION=0.2
-LOGFILE=None
+
+LOGFILE="/tmp/internode-applet.log"
 """
-If set, log() will output to a logfile (not implemented)
+If set, log() will output to a logfile
+if set to None, log() goes to stdout, if DEBUG is also true
 """
 
 DEBUG=True
 """
 Sets Debugging Mode.
 In debug mode, several things happen:
-	- Calls to log() produce output
+	- Calls to log() produce output when LOGFILE is None (to stdout)
 	- Time intervals are shortened dramatically 
 		(i.e: refresh once per minute, rather than once per hour)
 """
@@ -38,6 +40,8 @@ If True, NodeUtil will pretend like somebody just accidendally teh whole Intarwe
 ONE_KB = 1000
 """
 How many bytes per KB?
+
+Internode uses 1000 (50000 bytes = 50 Kb), some people prefer si units: 1024
 """
 
 def log(text):
@@ -45,8 +49,17 @@ def log(text):
 	Log a message with a timestamp
 		does nothing in debug mode
 	"""
-	if DEBUG:
-		print time.strftime("%Y-%m-%d %H:%M:%S") + ": " + text	
+	ln = time.strftime("%Y-%m-%d %H:%M:%S") + ": " + text
+	if LOGFILE:
+		try:
+			with open(LOGFILE, "a") as myfile:
+				myfile.write(ln + "\n")
+		except:
+			#cannot write to logfile...
+			print time.strftime("%Y-%m-%d %H:%M:%S") + (": *** ERROR: Cannot log to file: '%s'. Check permissions?" % LOGFILE)
+			print ln
+	elif DEBUG:
+		print ln
 
 class UpdateError(Exception):
 	"""
@@ -125,6 +138,23 @@ class NodeUtil(object):
 
 	status = property(get_status,set_status)
 
+	"""
+	callbacks run into threading issues with GTK
+		(updating GTK controls from a different thread causes issues, and is
+			painful to do threadsafe, so we don't use them).
+		instead, we poll nodeutil.status from the main thread
+
+		the code below does provide callback functionality, though:
+		usage:
+
+			def callback_func():
+				global mert
+				print "Status changed to: " + mert.status
+
+			mert = NodeUtil()
+			mert.on_status_change(callback_func)
+	"""
+	
 	#def on_status_change(self,callback):
 	#	 """
 	#	 sets the callback which is called when status changes
@@ -137,10 +167,16 @@ class NodeUtil(object):
 	#	 if self.can_has_callback:
 	#		 log("Firing StatusChange Callback (thread: %s)" % (thread.get_ident()))
 	#		 self._callback()
+	
 
 	"""
 	property getters and setters.
-		Note that they all use a reentrant lock to be threadsafe.
+		Important Note: that they all use a reentrant lock to be threadsafe.
+			Everything which is accessed/set from inside update_thread_func()
+			needs to use a lock, or bad things can happen.
+
+		When using these properties repeatedly, it's best to get their value once
+			into a temp variable and use that repeatedly
 	"""
 	def get_time(self):
 		with self.lock:

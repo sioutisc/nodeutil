@@ -24,12 +24,12 @@
 TODO ITEMS:
 
 - try to remove constants.py - figure out paths dynamically (?)
-- make nodeutil spawn a thread for updating
 - make awn applet size icon according to applet size
 - abstract away most UI stuff so that it can be used for either awn or gnome-panel
 
 """
 
+from internode.node_dialog import NodeDialog_Chart
 from internode.node_dialog import *
 import time
 import sys
@@ -63,7 +63,6 @@ except ImportError:
 	sys.exit(1)
 
 from internode.nodeutil import *
-from internode.history_window import HistoryWindow
 
 from internode.node_dialog import *
 
@@ -172,6 +171,10 @@ class InternodeAwnApp:
 		#	self.alert.show('MERT!')
 
 		#applet.timing.register(self.update, update_interval * 60)
+
+		#we register an update function to run every second.
+		#	the update function only updates the gui, and
+		#	every once in a while triggers the nodeutil update thread
 		applet.timing.register(self.update, 2)
 		applet.timing.delay(self.update, 1.0)
 
@@ -180,10 +183,10 @@ class InternodeAwnApp:
 		log("Init Complete")
 		#self.show_alert("Some text");
 
-	def status_changed(self):
-		log("-------------------------------------------------------")
-		log("Status is: %s (%s)" % (self.nodeutil.status, self.nodeutil.error))
-		#self.update()
+	#def status_changed(self):
+	#	log("-------------------------------------------------------")
+	#	log("Status is: %s (%s)" % (self.nodeutil.status, self.nodeutil.error))
+	#	#self.update()
 
 	def show_alert(self,text):
 		#TODO: set text on the alert
@@ -237,6 +240,7 @@ class InternodeAwnApp:
 
 		if widget or self.nodeutil.status == "Error":
 			#TODO: make it not spam teh nodes every 2s when there's an error condition
+			
 			#we're responding to a signal, or in an error state -
 			#	force nodeutil to update...
 			force = True
@@ -386,7 +390,7 @@ class InternodeAwnApp:
 		"""
 		Displays the graph window
 		"""
-		graph_window = HistoryWindow(self.nodeutil, self.ui_dir)
+		graph_window = NodeDialog_Chart(self.nodeutil)
 
 
 	def on_clicked(self, widget):

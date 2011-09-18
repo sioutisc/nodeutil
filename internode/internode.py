@@ -66,7 +66,6 @@ else:
 	gnomeapplet = gnome.applet
 
 from nodeutil import NodeUtil, UpdateError
-from history_window import HistoryWindow
 
 #####################
 # Class Definitions #
@@ -300,7 +299,7 @@ class InternodeMeter:
                 """
                 Displays the graph window
                 """
-                graph_window = HistoryWindow(self.nodeutil, self.ui_dir)
+                graph_window = NodeDialog_Chart(self.nodeutil)
 
 	
 	def show_prefs(self, widget = None, data = None):
