@@ -45,7 +45,6 @@ except ImportError:
 
 from nodeutil import *
 from graph import Graph
-from history_window import HistoryWindow
 
 log("---------------------------------------------------")
 log('NodeDialog Init.')
