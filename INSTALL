@@ -8,6 +8,9 @@ Firstly, make sure you have the following installed:
  - Any additional gnome-python-extras or python-gnome-extras
    packages for your system.
 
+For the awn applet, you'll also need:
+ - Avant-window-navigator
+ - awnlib
 
 Extract the archive and run the following as root:
 
