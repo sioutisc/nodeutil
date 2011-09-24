@@ -86,6 +86,8 @@ class InternodeMeter:
 		"""
 		Initialises the usage meter
 		"""
+		log("---------------------------------------------------")
+		log("Internode GNOME Applet - Init")
 
 		# Initialize GConf
 		self.gconf_client = gconf.client_get_default()
@@ -126,6 +128,10 @@ class InternodeMeter:
 
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
+
+		#update nodeutil...
+		self.nodeutil.update(True)
+		log("Init Complete")
 
 	def update_image(self):
 		"""
