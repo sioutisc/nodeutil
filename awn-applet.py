@@ -29,6 +29,7 @@ TODO ITEMS:
 
 """
 
+from internode.node_dialog import NodeDialog_Config
 from internode.node_dialog import *
 import time
 import sys
@@ -78,7 +79,7 @@ class InternodeAwnApp:
 		Applet Init
 		"""
 		log("---------------------------------------------------")
-		log("Internode Applet - Init")
+		log("Internode AWN Applet - Init")
 
 		#awnlib applet object...
 		self.applet = applet
@@ -165,15 +166,11 @@ class InternodeAwnApp:
 		applet.timing.register(self.update, 2)
 		applet.timing.delay(self.update, 1.0)
 
-		#self.nodeutil.update()
+		#force nodeutil to retrieve immediately...
+		self.nodeutil.update(True)
 
 		log("Init Complete")
 		#self.show_alert("Some text");
-
-	#def status_changed(self):
-	#	log("-------------------------------------------------------")
-	#	log("Status is: %s (%s)" % (self.nodeutil.status, self.nodeutil.error))
-	#	#self.update()
 
 	def show_alert(self,text):
 		#TODO: set text on the alert
@@ -343,9 +340,7 @@ class InternodeAwnApp:
 
 
 	def on_clicked(self, widget):
-		pass
-		#log("Clicked")
-		#self.notebook.set_current_page(0)
+		self.notebook.set_current_page(0)
 		#self.graph.graph.refresh()
 
 
@@ -375,51 +370,17 @@ class InternodeAwnApp:
 			menu.insert(chart_item,6)
 
 	def exit(self,widget):
+		if widget:
+			log("User requested exit")
 		sys.exit(666)
-
-
-	def write_prefs(self):
-		"""
-		Writes the username and password to the GConf registry
-		"""
-
-		self.gconf_client.set_string("/apps/internode-applet/username", self.nodeutil.username)
-		self.gconf_client.set_string("/apps/internode-applet/password", self.nodeutil.password)
-		self.gconf_client.set_bool("/apps/internode-applet/show_used", self.nodeutil.show_used)
-
 
 	def show_prefs(self, widget = None, data = None):
 		"""
 		Displays the Preferences dialog
 		"""
-
-		# Load and show the preferences dialog box
-		glade = gtk.glade.XML(self.ui_dir + "/internode-applet.glade", "preferences")
-		preferences = glade.get_widget("preferences")
-
-		# Set the input text to the current username/password values
-		usertext = glade.get_widget("username")
-		usertext.set_text(self.nodeutil.username)
-		passtext = glade.get_widget("password")
-		passtext.set_text(self.nodeutil.password)
-
-		# Set the used/remaining radio buttons
-		used = glade.get_widget("show_used")
-		used.set_active(self.nodeutil.show_used)
-
-		result = preferences.run()
-
-		if result == gtk.RESPONSE_OK:
-			# Update username and password
-			self.nodeutil.username = usertext.get_text()
-			self.nodeutil.password = passtext.get_text()
-			self.nodeutil.show_used = used.get_active()
-			self.write_prefs()
-			#self.update()
-
-		preferences.destroy()
-
-
+		
+		NodeDialog_Config(self.nodeutil)
+		
 if __name__ == "__main__":
 	awnlib.init_start(InternodeAwnApp, {"name": applet_name,
 		"short": "Internode Usage Meter",

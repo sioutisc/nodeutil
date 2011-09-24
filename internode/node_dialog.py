@@ -408,7 +408,46 @@ class NodeDialog_Config(NodeDialog):
 	"""
 	The configuration dialog
 	"""
-	
+	def __init__(self,node):
+		log("Showing Preferences Dialog")
+
+		#The prefs dialog never has a parent
+		NodeDialog.__init__(self,node,None)
+
+		self.gconf_client = gconf.client_get_default()
+		
+		# Load and show the preferences dialog box
+		glade = gtk.glade.XML(UI_FILE, "preferences")
+		preferences = glade.get_widget("preferences")
+
+		# Set the input text to the current username/password values
+		usertext = glade.get_widget("username")
+		usertext.set_text(self.nodeutil.username)
+		passtext = glade.get_widget("password")
+		passtext.set_text(self.nodeutil.password)
+
+		# Set the used/remaining radio buttons
+		used = glade.get_widget("show_used")
+		used.set_active(self.nodeutil.show_used)
+
+		result = preferences.run()
+
+		if result == gtk.RESPONSE_OK:
+			# Update username and password
+			self.nodeutil.username = usertext.get_text()
+			self.nodeutil.password = passtext.get_text()
+			self.nodeutil.show_used = used.get_active()
+			self.write_prefs()
+			#self.update()
+
+		preferences.destroy()
+
+	def write_prefs(self):
+		log("Saving Preferences")
+		self.gconf_client.set_string("/apps/internode-applet/username", self.nodeutil.username)
+		self.gconf_client.set_string("/apps/internode-applet/password", self.nodeutil.password)
+		self.gconf_client.set_bool("/apps/internode-applet/show_used", self.nodeutil.show_used)
+
 class NodeDialog_Chart(NodeDialog):
 	"""
 	The Chart Dialog. 
@@ -687,7 +726,10 @@ class NodeIcons:
 	"""
 	NodeIcons Class
 	Auto-loads and holds the icons used by the Internode Meter
+	Note that this is a singleton - it loads icons once on init;
+		just use e.g: NodeIcons.icons["x"]
 	"""
+	
 	log("NodeIcons Init")
 	icons = {}
 

@@ -24,10 +24,8 @@ if set to None, log() goes to stdout, if DEBUG is also true
 DEBUG=True
 """
 Sets Debugging Mode.
-In debug mode, several things happen:
+In debug mode:
 	- Calls to log() produce output when LOGFILE is None (to stdout)
-	- Time intervals are shortened dramatically 
-		(i.e: refresh once per minute, rather than once per hour)
 """
 
 INSANE_DEBUG = False
@@ -36,7 +34,7 @@ SIMULATE_NETERROR=False
 """
 If True, NodeUtil will pretend like somebody just accidendally teh whole Intarwebs
 """
-NETERR_MSG="*** Simulating a network error ***"
+NETERR_MSG="*** Simulating a network error after 5 seconds ***"
 """
 String to spit to log when simulating a network error
 """
@@ -127,7 +125,8 @@ class NodeUtil(object):
 
 		self.lock = threading.RLock()
 
-		self.status = "Ready"
+		#we set the 'updating' state initially, as 'OK' implies that we have data
+		self.status = "Updating"
 
 	"""
 	getter / setter for status property
@@ -304,6 +303,14 @@ class NodeUtil(object):
 			self._ip = value
 	ip = property(get_ip,set_ip)
 
+	def set_error(self,errortext):
+		"""
+		Updates the nodeutil error message and status
+		"""
+		log("Nodeutil Error: %s" % errortext)
+		self.error = errortext
+		self.status = "Error"
+
 	"""
 	Internode API functions.
 		These are called from within the update thread
@@ -327,8 +334,7 @@ class NodeUtil(object):
 			return services
 
 		except:
-			self.error = "Failed to fetch service data."
-			self.status = "Error"
+			self.set_error("Failed to fetch service data.")
 
 	def get_usage(self, service):
 		if INSANE_DEBUG:log("Retrieving usage...")
@@ -352,8 +358,7 @@ class NodeUtil(object):
 			self.error = ""
 
 		except:
-			self.error = "Failed to fetch usage data."
-			self.status = "Error"
+			self.set_error("Failed to fetch usage data.")
 
 	def get_history(self, service):
 		if INSANE_DEBUG:log("Retrieving history...")
@@ -369,8 +374,7 @@ class NodeUtil(object):
 				self.history.append((date, mb))
 
 		except:
-			self.error = "Failed to fetch usage data."
-			self.status = "Error"
+			self.set_error("Failed to fetch usage data.")
 
 	def get_service_info(self,service):
 		if INSANE_DEBUG: 
@@ -441,6 +445,8 @@ class NodeUtil(object):
 	def check_version(self):
 		#returns a float containing the current version of NodeUtil,
 		#	for comparing with VERSION
+		#Note that unlike nodeutil.update(), this function blocks while network
+		#	retrieval happens - it does not spawn a thread.
 		try:
 			log("NodeUtil.check_version()")
 
@@ -498,8 +504,8 @@ class NodeUtil(object):
 
 		"""
 
-		if self.status != "Updating" and (
-			(time.time() - self.update_interval > self.time) or force):
+		if (self.status != "Updating" and (
+			(time.time() - self.update_interval > self.time)) or force):
 				log("NodeUtil.update(%s)" % force)
 				if INSANE_DEBUG:log("Spawning Thread...")
 				thread.start_new_thread(self.update_thread_func,())
@@ -515,19 +521,22 @@ class NodeUtil(object):
 		self.status = "Updating"
 		self.time = time.time()
 
-		# Just get data for first service
-		#try:
-		service = self.get_services()[0]
-		self.get_usage(service)
-		self.get_history(service)
-		self.get_service_info(service)
-		self.ip = self.fetch_ip_address()
+		
+		try:
+			# Just get data for first service
+			service = self.get_services()[0]
+			#don't continue to attempt retrieval after an error has occurred
+			if self.status != "Error": self.get_usage(service)
+			if self.status != "Error": self.get_history(service)
+			if self.status != "Error": self.get_service_info(service)
+			if self.status != "Error": self.ip = self.fetch_ip_address()
 
-		if (self.status == "Updating"):
-			self.status = "OK"
-		#except:
-		#	self.status = "Error"
-		#	self.error = "An unexpected error occurred"
+			if (self.status == "Updating"):
+				self.status = "OK"
+		except:
+			if self.status != "Error":	#don't overwrite existing error message
+				self.status = "Error"
+				self.set_error("An unexpected error occurred")
 
 		log("Nodeutil.update complete")
 		#thread.interrupt_main()
