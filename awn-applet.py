@@ -47,7 +47,6 @@ except ImportError:
 
 try:
 	#import gnome.ui
-	import gconf
 	import gobject
 except ImportError:
 	print "Failed to open GNOME libraries."
@@ -85,7 +84,7 @@ class InternodeAwnApp:
 		self.applet = applet
 
 		#gconf client for retrieving gnome settings
-		self.gconf_client = gconf.client_get_default()
+		#self.gconf_client = gconf.client_get_default()
 
 		#HOWTO: show a notification:
 		#self.notification = applet.notify.create_notification("Alert", NodeIcons.logo, "dialog-warning", 20)
@@ -131,7 +130,7 @@ class InternodeAwnApp:
 		applet.add_overlay(self.throbber)
 
 		#get preferences...
-		self.load_prefs()
+		self.nodeutil.load_prefs()
 
 		#setup a main dialog for detailed info...
 		dialog = applet.dialog.new("main")
@@ -174,32 +173,6 @@ class InternodeAwnApp:
 
 	def	close_alert(self, widget = None, data = None):
 		self.alert.hide()
-
-	def load_prefs(self):
-		"""
-		Reads the username and password from the GConf registry
-		"""
-
-		log("Loading Preferences")
-
-		username = self.gconf_client.get_string("/apps/internode-applet/username")
-		password = self.gconf_client.get_string("/apps/internode-applet/password")
-		show_used = self.gconf_client.get_bool("/apps/internode-applet/show_used")
-
-		if username == None or password == None:
-			if username == None:
-				username = ""
-			if password == None:
-				password = ""
-			log("missing preferences! showing dialog...")
-			self.show_prefs()
-		else:
-			self.nodeutil.username = username
-			self.nodeutil.password = password
-			self.nodeutil.show_used = show_used
-			#self.update()
-			#self.set_timeout(True)
-
 
 	def update(self, widget = None, data = None):
 		"""

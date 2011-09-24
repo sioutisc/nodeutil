@@ -76,12 +76,6 @@ class InternodeMeter:
 	Main class of the GNOME Internode Usage Meter Panel Applet.
 	"""
 
-	#ui_dir = os.path.join(INTERNODE_PREFIX, 'share', 'internode')
-	#DM: use temp path
-	ui_dir = '/home/antisol/Downloads/internode-applet-1.7'
-
-	pixmap_dir = os.path.join(ui_dir, 'pixmaps') 
-
 	def __init__(self, applet, iid):
 		"""
 		Initialises the usage meter
@@ -106,10 +100,19 @@ class InternodeMeter:
 		self.eventbox.add(self.hbox)
 
 		applet.add(self.eventbox)
-
-		# Load the right-click menu
-		f = open(self.ui_dir + "/menu.xml", 'r')
-		menu = f.read()	
+		
+		#hardcoded menu XML:
+		menu = """
+			<popup name="button3">
+			<menuitem name="Item 1" verb="Preferences" label="_Preferences..."
+				pixtype="stock" pixname="gtk-properties"/>
+			<menuitem name="Item 2" verb="About" label="_About..."
+				pixtype="stock" pixname="gnome-stock-about"/>
+			<menuitem name="Item 3" verb="Graph" label="_Graph..."/>
+			<menuitem name="Item 4" verb="Update" label="_Update"/>
+			</popup>
+		"""
+		
 		applet.setup_menu(menu,
 						 [("Preferences", self.show_prefs),
 						  ("About", self.show_about),
@@ -122,12 +125,22 @@ class InternodeMeter:
 		# Initialize Internode Usage Checker
 		self.nodeutil = NodeUtil()
 		self.nodeutil.user_agent_text = "GNOME Applet"
-		self.load_prefs()
+		self.nodeutil.load_prefs()
+		self.set_timeout(True)
 		self.dialog = None
 		applet.connect("button-press-event",self.on_clicked)
 
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
+
+
+		#check for a new version
+		latest = self.nodeutil.check_version()
+		if float(VERSION) < latest:
+			log("A New Version of Nodeutils is available!")
+			markup = "<b>A New version of the Internode Usage Meter is available!</b>\nversion %02.1f is out, get it now!" % latest
+			NodeDialog_Alert(self.nodeutil,None,"Internode Usage Meter",markup)
+			#self.alert.show("A New Version (v%02.1f) of Nodeutils is available!" % latest,False)
 
 		#update nodeutil...
 		self.nodeutil.update(True)
@@ -279,67 +292,7 @@ class InternodeMeter:
 		"""
 		Displays the Preferences dialog
 		"""
-
-		# Load and show the preferences dialog box
-		glade = gtk.glade.XML(self.ui_dir + "/internode-applet.glade", "preferences")
-		preferences = glade.get_widget("preferences")
-		
-		# Set the input text to the current username/password values
-		usertext = glade.get_widget("username")
-		usertext.set_text(self.nodeutil.username)
-		passtext = glade.get_widget("password")
-		passtext.set_text(self.nodeutil.password)
-		
-		# Set the used/remaining radio buttons
-		used = glade.get_widget("show_used")
-		used.set_active(self.nodeutil.show_used)
-		
-		result = preferences.run()
-		
-		if result == gtk.RESPONSE_OK:
-			# Update username and password
-			self.nodeutil.username = usertext.get_text()
-			self.nodeutil.password = passtext.get_text()
-			self.nodeutil.show_used = used.get_active()
-			self.write_prefs()
-			self.update()
-
-		preferences.destroy()
-	
-	
-	def write_prefs(self):
-		"""
-		Writes the username and password to the GConf registry
-		"""
-		
-		self.gconf_client.set_string("/apps/internode-applet/username", self.nodeutil.username)
-		self.gconf_client.set_string("/apps/internode-applet/password", self.nodeutil.password)
-		self.gconf_client.set_bool("/apps/internode-applet/show_used", self.nodeutil.show_used)
-
-
-	def load_prefs(self):
-		"""
-		Reads the username and password from the GConf registry
-		"""
-
-		username = self.gconf_client.get_string("/apps/internode-applet/username")
-		password = self.gconf_client.get_string("/apps/internode-applet/password")
-		show_used = self.gconf_client.get_bool("/apps/internode-applet/show_used")
-		
-		if username == None or password == None:
-			if username == None:
-				username = ""
-			if password == None:
-				password = ""
-
-			self.show_prefs()
-		else:
-			self.nodeutil.username = username
-			self.nodeutil.password = password
-			self.nodeutil.show_used = show_used
-			self.update()
-			self.set_timeout(True)
-		
+		NodeDialog_Config(self.nodeutil)
 
 	def change_background(self, applet, bg_type, color, pixmap):
 		"""

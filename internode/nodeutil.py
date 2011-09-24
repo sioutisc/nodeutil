@@ -12,12 +12,13 @@ import base64
 from xml.dom import minidom
 import thread
 import threading
+import gconf
 
 VERSION=0.2
 
 LOGFILE="/tmp/internode-applet.log"
 """
-If set, log() will output to a logfile
+If set, log() wiimport gconfll output to a logfile
 if set to None, log() goes to stdout, if DEBUG is also true
 """
 
@@ -124,6 +125,9 @@ class NodeUtil(object):
 		self.update_interval = 30 * 60 #half an hour
 
 		self.lock = threading.RLock()
+
+		#gconf client for retrieving gnome settings
+		self.gconf_client = gconf.client_get_default()
 
 		#we set the 'updating' state initially, as 'OK' implies that we have data
 		self.status = "Updating"
@@ -310,6 +314,28 @@ class NodeUtil(object):
 		log("Nodeutil Error: %s" % errortext)
 		self.error = errortext
 		self.status = "Error"
+
+	def load_prefs(self):
+		"""
+		Reads the username and password from the GConf registry
+		"""
+		log('Loading Preferences')
+
+		username = self.gconf_client.get_string("/apps/internode-applet/username")
+		password = self.gconf_client.get_string("/apps/internode-applet/password")
+		show_used = self.gconf_client.get_bool("/apps/internode-applet/show_used")
+		
+		if username == None or password == None:
+			if username == None:
+				username = ""
+			if password == None:
+				password = ""
+
+			self.show_prefs()
+		else:
+			self.username = username
+			self.password = password
+			self.show_used = show_used
 
 	"""
 	Internode API functions.
