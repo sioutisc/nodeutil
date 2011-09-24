@@ -91,10 +91,6 @@ class InternodeAwnApp:
 		#self.notification = applet.notify.create_notification("Alert", NodeIcons.logo, "dialog-warning", 20)
 		#self.notification.show()
 
-		#TODO: Replace this with a better way(tm) to do config
-		self.ui_dir = os.path.dirname(__file__)
-		#self.pixmap_dir = os.path.join(self.ui_dir, 'pixmaps')
-
 		applet.set_icon_pixbuf(NodeIcons.icons["x"])
 
 		#tooltip...
@@ -340,7 +336,7 @@ class InternodeAwnApp:
 
 
 	def on_clicked(self, widget):
-		self.notebook.set_current_page(0)
+		self.main_dialog.notebook.set_current_page(0)
 		#self.graph.graph.refresh()
 
 
