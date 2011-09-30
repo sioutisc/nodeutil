@@ -57,8 +57,15 @@ if [ -z "$GNOMEPREFIX" ] && [ -z "$AWNPREFIX" ]; then
 	echo -e "\nNOTICE: This applet probably won't be particularly useful if you're not using gnome-panel or avant-window-navigator. You should probably install one or both of these before proceeding. "
 fi
 
-#we install in the same prefix as awn (arbitrary decision. gnomeprefix and awnprefix will be the same in most cases)
-APPPATH="$AWNPREFIX/share/internode-applet"
+if [ -n "$GNOMEPREFIX" ]; then
+	APPPATH="$GNOMEPREFIX/share/internode-applet"
+else
+	if [ -n "$AWNPREFIX" ]; then
+		APPPATH="$AWNPREFIX/share/internode-applet"
+	else
+		APPPATH="/usr/share/internode-applet"
+	fi;
+fi
 
 echo " - Internode Applet files will be installed in '$APPPATH'"
 
@@ -110,6 +117,8 @@ if [ -n "$AWNPREFIX" ]; then
 	echo "    ln -s $APPPATH/internode.desktop $AWNPREFIX/$AWNSUFFIX/internode.desktop"
 fi
 
+echo " - Installing 'internode-usage-report' command-line app..."
+echo "    ln -s $APPPATH/internode-usage-report /usr/bin/internode-usage-report"
 #everything's perfect, tell the user how to get the applets
 echo -e "\n\nInstallation is complete. You'll need to restart the relevant program(s) with commands like:"
 if [ -n "$AWNPREFIX" ]; then
@@ -120,6 +129,7 @@ if [ -n "$GNOMEPREFIX" ]; then
 fi
 echo -e "Or you can just log out and back in. or reboot. or alt-prtscn-k. or maybe ctrl-alt-bksp. or sudo killall xinit."
 echo -e "Once you've restarted your panel app(s), you should be able to add the internode applet to the Gnome panel and/or AWN\n"
+echo -e "You can get a usage report from the command-line by typing 'internode-usage-report'.\n"
 echo "You can also run '$APPPATH/run_in_window' to get the GNOME applet in it's own small window."
 echo -e "\nIf you have problems, check out /tmp/internode-applet.log. You can also email this file to antisol@internode.on.net with 'internode applet' in the subject."
 echo -e "\nEnjoy! :)\n\n"
