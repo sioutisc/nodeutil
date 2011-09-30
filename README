@@ -1,0 +1,10 @@
+Internode Usage Meter for GNOME and Avant Window Navigator
+
+By Dale Maggee
+
+Based on Sam Polenhz's GNOME Usage Meter
+
+GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
+
+run 'sudo ./setup.sh' to install, then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
+

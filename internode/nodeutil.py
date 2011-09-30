@@ -22,7 +22,7 @@ If set, log() wiimport gconfll output to a logfile
 if set to None, log() goes to stdout, if DEBUG is also true
 """
 
-DEBUG=True
+DEBUG=False
 """
 Sets Debugging Mode.
 In debug mode:
@@ -42,9 +42,9 @@ String to spit to log when simulating a network error
 
 ONE_KB = 1000
 """
-How many bytes per KB?
+How many bytes per KB/MB/etc do we use in calculations?
 
-Internode uses 1000 (50000 bytes = 50 Kb), some people prefer si units: 1024
+Internode uses 1000 (50000 bytes = 50 Kb) in their plans, si units: 1024
 """
 
 def log(text):

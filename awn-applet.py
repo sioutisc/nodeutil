@@ -23,7 +23,6 @@
 
 TODO ITEMS:
 
-- try to remove constants.py - figure out paths dynamically (?)
 - make awn applet size icon according to applet size
 - abstract away most UI stuff so that it can be used for either awn or gnome-panel
 
@@ -83,9 +82,6 @@ class InternodeAwnApp:
 		#awnlib applet object...
 		self.applet = applet
 
-		#gconf client for retrieving gnome settings
-		#self.gconf_client = gconf.client_get_default()
-
 		#HOWTO: show a notification:
 		#self.notification = applet.notify.create_notification("Alert", NodeIcons.logo, "dialog-warning", 20)
 		#self.notification.show()
@@ -109,9 +105,6 @@ class InternodeAwnApp:
 			dlg = applet.dialog.new("Alert")
 			markup = "<b>A New version of the Internode Usage Meter is available!</b>\nversion %02.1f is out, get it now!" % latest
 			NodeDialog_Alert(self.nodeutil,dlg,"Internode Usage Meter",markup)
-			#self.alert.show("A New Version (v%02.1f) of Nodeutils is available!" % latest,False)
-			
-		#self.nodeutil.on_status_change(self.status_changed)
 
 		#icon text overlay for displaying percentage...
 		self.overlay = awn.OverlayText()
@@ -137,8 +130,6 @@ class InternodeAwnApp:
 		self.main_dialog = NodeDialog_Main(self.nodeutil,dialog)
 
 		self.main_dialog.on_refresh_click(self.update)
-
-		#self.main_dialog.show()
 
 		ic = self.main_dialog.get_widget("icon")
 		ic.set_from_pixbuf(NodeIcons.logo)

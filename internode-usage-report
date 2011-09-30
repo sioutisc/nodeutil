@@ -1,0 +1,35 @@
+#!/usr/bin/env python
+
+#console-based nodeutil client. does one request, reports, and exits.
+
+print "\nFetching Internode Usage...\n"
+from internode.nodeutil import *
+
+log("----------------------------------------")
+log("  Internode Console Usage Meter - Init")
+log("----------------------------------------")
+
+node = NodeUtil()
+
+node.load_prefs()
+
+node.update(True)
+
+#wait for the thread to complete...
+while node.status == "Updating":
+	time.sleep(0.5)
+
+if node.status == "OK":
+	print "Usage data retrieved successfully.\n"
+	print "----------------------------------------------"
+	print "Internode Usage for: %s" % node.username
+	print "----------------------------------------------"
+	print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
+	print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
+	print " - %1d days remain before your quota resets." % node.daysleft
+	print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
+	print "\n"
+else:
+	print "There was an error retrieving usage data\n"
+	sys.exit(1)
+

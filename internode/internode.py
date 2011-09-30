@@ -133,7 +133,6 @@ class InternodeMeter:
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
 
-
 		#check for a new version
 		latest = self.nodeutil.check_version()
 		if float(VERSION) < latest:
