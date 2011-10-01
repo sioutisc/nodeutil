@@ -744,7 +744,7 @@ class NodeIcons:
 	#Percentage Used icons
 	icons["u0"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u0.png"))
 	icons["u25"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u25.png"))
-	icons["u50"] = icons["50"]
+	icons["u50"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u50.png"))
 	icons["u75"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u75.png"))
 	icons["u100"] = gtk.gdk.pixbuf_new_from_file(os.path.join(PIXMAP_PATH, "internode-u100.png"))
 
