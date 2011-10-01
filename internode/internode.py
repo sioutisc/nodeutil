@@ -197,7 +197,7 @@ class InternodeMeter:
 			# Show error image
 			icon = NodeIcons.icons["x"]
 		#al = self.image.get_allocation().height
-		s = self.image.get_allocation().height
+		s = self.hbox.get_allocation().height - 2
 		#s = self.image.get_height
 		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 
