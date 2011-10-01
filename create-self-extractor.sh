@@ -39,13 +39,13 @@ if [ "$installer" != "" ]; then
 	echo 'INSTALLER="'$installer'"'
 else
 	if [ "$target" != "" ]; then
-		echo 'target="'$target'"'
+		echo '(temp dir: '$target')'
 	fi
 fi
 
 cat <<EndOfFooter
 
-echo "target: \$target"
+echo "(temp dir: \$target)"
 
 #do the extraction...
 ARCHIVE=\`awk '/^---BEGIN TGZ DATA---/ {print NR + 1; exit 0; }' \$0\`
@@ -66,7 +66,7 @@ EndOfFooter
 
 make_self_extractor() {
 
-	echo "Building Self Extractor: $1 from $2."
+	echo "Building Self Extractor: $2 from $1."
 
 	if [ -f "$3" ]; then
 		installer="$3"

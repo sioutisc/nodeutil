@@ -137,5 +137,5 @@ echo -e "Once you've restarted your panel app(s), you should be able to add the 
 echo -e "You can get a usage report from the command-line by typing 'internode-usage-report'.\n"
 echo "You can also run '$APPPATH/run_in_window' to get the GNOME applet in it's own small window."
 echo -e "\nIf you have problems, check out /tmp/internode-applet.log. You can also email this file to antisol@internode.on.net with 'internode applet' in the subject."
-echo -e "\nEnjoy! :)\n\n"
+echo -e "\nEnjoy! :)\n\n - Dale Maggee\n\n"
 
