@@ -4,7 +4,7 @@
 GKSU=`which gksu`
 if [ -z "$GKSU" ]; then
 	#gksu not installed, use sudo in xterm...
-	xterm -title "Installing Internode Meters for Linux" -hold -e 'echo "Admin priveleges are required to install the Internode Meters.";sudo ./setup.sh'
+	xterm -geometry 120x25 -fg green -bg black -title "Installing Internode Meters for Linux" -hold -e 'echo "Admin priveleges are required to install the Internode Meters.";sudo ./setup.sh'
 else
-	gksu --message "You need Administrator privileges to instal the Internode Meters." "xterm -title 'Installing Internode Meters for Linux' -hold -e ./setup.sh"
+	gksu --message "You need Administrator privileges to instal the Internode Meters." "xterm -geometry 120x25 -fg green -bg black -title 'Installing Internode Meters for Linux' -hold -e ./setup.sh"
 fi

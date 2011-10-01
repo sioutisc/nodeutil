@@ -323,7 +323,8 @@ class InternodeAwnApp:
 		chart_item.connect("activate",self.update)
 		menu.insert(chart_item,4)
 
-		if DEBUG:
+		global debug
+		if debug:
 			menu.insert(gtk.SeparatorMenuItem(), 5)
 
 			chart_item = gtk.MenuItem("Die")
