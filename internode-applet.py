@@ -11,15 +11,27 @@ pygtk.require('2.0')
 
 import gtk
 
+#import internode.constants
+# Test whether we want to import the deprecated gnome.applet or
+# the newer gnomeapplet
+try:
+    import gnomeapplet
+    # Use gnomeapplet
+    INTERNODE_GNOMEAPPLET = 'gnomeapplet'
+except ImportError:
+    # Use (deprecated) gnome.applet
+    INTERNODE_GNOMEAPPLET = 'gnome.applet'
+
 from internode.internode import InternodeMeter
 
-import internode.constants
-
-if internode.constants.INTERNODE_GNOMEAPPLET == 'gnomeapplet':
-	import gnomeapplet
+if INTERNODE_GNOMEAPPLET == 'gnomeapplet':
+	#import gnomeapplet
+	pass
 else:
 	import gnome.applet
 	gnomeapplet = gnome.applet
+
+
 
 ########################
 # Function Definitions #

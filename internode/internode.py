@@ -20,6 +20,15 @@
 #                                                                             #
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
+INTERNODE_NAME = 'Internode Usage Meter'
+INTERNODE_URL = 'http://www.users.on.net/~antisol/nodeutil'
+INTERNODE_COPYRIGHT = '(C) 2011 Dale Maggee'
+INTERNODE_DESCRIPTION = 'Applet for monitoring your Internode ADSL usage.'
+INTERNODE_AUTHORS = [
+	'Dale Maggee <antisol(at)internode(dot)on(dot)net>',
+	'Sam Pohlenz <retrix@internode.on.net>',
+	'Chris Scobell <chris@thescobells.com>'
+	]
 
 ###########
 # Imports #
@@ -59,13 +68,27 @@ except ImportError:
 	print "Please ensure they are installed correctly."
 	sys.exit(1)
 
+#import internode.constants
+# Test whether we want to import the deprecated gnome.applet or
+# the newer gnomeapplet
+try:
+    import gnomeapplet
+    # Use gnomeapplet
+    INTERNODE_GNOMEAPPLET = 'gnomeapplet'
+except ImportError:
+    # Use (deprecated) gnome.applet
+    INTERNODE_GNOMEAPPLET = 'gnome.applet'
+
 if INTERNODE_GNOMEAPPLET == 'gnomeapplet':
-	import gnomeapplet
+	#import gnomeapplet
+	pass
 else:
 	import gnome.applet
 	gnomeapplet = gnome.applet
 
-from nodeutil import NodeUtil, UpdateError
+from nodeutil import * 
+
+INTERNODE_VERSION = "%2.1f" % VERSION
 
 #####################
 # Class Definitions #

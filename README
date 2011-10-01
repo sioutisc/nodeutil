@@ -6,5 +6,7 @@ Based on Sam Polenhz's GNOME Usage Meter
 
 GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
 
+For Requirements, see the INSTALL file
+
 run 'sudo ./setup.sh' to install, then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
 

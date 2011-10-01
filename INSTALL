@@ -6,21 +6,20 @@ Firstly, make sure you have the following installed:
  - GNOME 2
  - PyGTK 
  - Any additional gnome-python-extras or python-gnome-extras
-   packages for your system.
+   packages for your system (ubuntu 11.04: sudo apt-get install python-gnomeapplet).
 
 For the awn applet, you'll also need:
  - Avant-window-navigator
  - awnlib
 
-Extract the archive and run the following as root:
+If you're reading this, you probably haven't run the self-extracting installer. You can simply download the self-extracting .sh script, mark it executable, and run it.
 
- # python setup.py install
- # killall gnome-panel
+you can either just run './installer', or run 'sudo ./setup.sh' to install, 
+then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
 
-You should now be able to right-click on your GNOME panel, choose
-'Add to Panel' and select the Internode Usage Meter Applet.
-
+You should now be able to right-click on your GNOME/Awn panel, choose
+'Add to Panel' or 'applets' and select the Internode Usage Meter Applet.
 
 Good luck and enjoy!
 
-Sam Pohlenz <retrix@internode.on.net>
+Dale Maggee
