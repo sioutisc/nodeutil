@@ -86,17 +86,17 @@ internode_dirs=( "internode" "pixmaps" )
 
 if [ ! -d "$APPPATH" ]; then
 	echo " - Creating '$APPPATH'..."
-	echo "mkdir $APPPATH"
+	mkdir $APPPATH
 else
 	echo "  (Overwriting previous installation!)"
 fi
 echo -n " - Copying files..."
 for f in "${internode_files[@]}"; do
-	echo "    cp -v $f $APPPATH/"
+	cp -v $f $APPPATH
 done
 
 for d in "${internode_dirs[@]}"; do
-	echo "    cp -Rv $d $APPPATH/"
+	cp -Rv $d $APPPATH/
 done
 
 #now that all our files are in $APPPATH, create symlinks for awn and gnome to find...
@@ -104,21 +104,21 @@ echo ", Done."
 
 if [ -n "$GNOMEPREFIX" ]; then
 	echo " - Installing GNOME Applet..."
-	echo "	  cp $APPPATH/InternodeUsageMeterApplet.server.in $APPPATH/InternodeUsageMeterApplet.server"
+	cp $APPPATH/InternodeUsageMeterApplet.server.in $APPPATH/InternodeUsageMeterApplet.server
 	#TODO: replace "@PREFIX@" in the .server file with $APPPATH
-	echo "sed -i 's|@PREFIX@|$APPPATH|g' $APPPATH/InternodeUsageMeterApplet.server"
-	echo "    ln -s $APPPATH/InternodeUsageMeterApplet.server $GNOMEPREFIX/$GNOMESUFFIX/InternodeUsageMeterApplet.server"
+	sed -i 's|@PREFIX@|$APPPATH|g' $APPPATH/InternodeUsageMeterApplet.server
+	ln -s $APPPATH/InternodeUsageMeterApplet.server $GNOMEPREFIX/$GNOMESUFFIX/InternodeUsageMeterApplet.server
 fi
 
 if [ -n "$AWNPREFIX" ]; then
 	echo " - Installing AWN Applet..."
 	#create symlinks in awn's applets dir: one to $APPPATH, and one for the desktop file...
-	echo "    ln -s $APPPATH $AWNPREFIX/$AWNSUFFIX/internode"
-	echo "    ln -s $APPPATH/internode.desktop $AWNPREFIX/$AWNSUFFIX/internode.desktop"
+	ln -s $APPPATH $AWNPREFIX/$AWNSUFFIX/internode
+	ln -s $APPPATH/internode.desktop $AWNPREFIX/$AWNSUFFIX/internode.desktop
 fi
 
 echo " - Installing 'internode-usage-report' command-line app..."
-echo "    ln -s $APPPATH/internode-usage-report /usr/bin/internode-usage-report"
+ln -s $APPPATH/internode-usage-report /usr/bin/internode-usage-report
 #everything's perfect, tell the user how to get the applets
 echo -e "\n\nInstallation is complete. You'll need to restart the relevant program(s) with commands like:"
 if [ -n "$AWNPREFIX" ]; then
