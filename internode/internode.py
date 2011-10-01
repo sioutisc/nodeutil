@@ -109,12 +109,17 @@ class InternodeMeter:
 		# Initialize GConf
 		self.gconf_client = gconf.client_get_default()
 
+		self.applet = applet
+
 		# Initialize GTK widgets
 		self.image = gtk.Image()
-		self.image.set_from_pixbuf(NodeIcons.icons["x"])
+		self.image.expand = True
+
 		self.label = gtk.Label("??%")
 		self.eventbox = gtk.EventBox()
 		self.hbox = gtk.HBox()
+		self.hbox.expand = False
+		self.hbox.padding = 2
 		self.tooltips = gtk.Tooltips()
 	
 		# Add widgets to applet
@@ -123,6 +128,17 @@ class InternodeMeter:
 		self.eventbox.add(self.hbox)
 
 		applet.add(self.eventbox)
+
+		icon = NodeIcons.icons["x"]
+		#s = self.applet.get_size() - 2
+		s = self.applet.get_size()
+		#log("s1: %s" % s)
+		s2 = s - (s % 16) - 16
+		if s2 <= (s - 3):
+			s = s2
+		#log("s2: %s" % s)
+		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
+		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 		
 		#hardcoded menu XML:
 		menu = """
@@ -196,9 +212,13 @@ class InternodeMeter:
 		else:
 			# Show error image
 			icon = NodeIcons.icons["x"]
-		#al = self.image.get_allocation().height
-		s = self.hbox.get_allocation().height - 2
-		#s = self.image.get_height
+
+		s = self.applet.get_size()
+		#log("s1: %s" % s)
+		s2 = s - (s % 16) - 16
+		if s2 <= s:
+			s = s2
+		#log("s2: %s" % s)
 		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 
 	def set_timeout(self, enable = True, interval = 500):
