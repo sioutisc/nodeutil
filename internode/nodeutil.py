@@ -19,15 +19,18 @@ VERSION=0.2
 LOGFILE="/tmp/internode-applet.log"
 """
 If set, log() wiimport gconfll output to a logfile
-if set to None, log() goes to stdout, if DEBUG is also true
+if set to None, log() goes to stdout, if debug is also true
 """
 
-DEBUG=False
+debug=False
 """
 Sets Debugging Mode.
 In debug mode:
-	- Calls to log() produce output when LOGFILE is None (to stdout)
+	- Calls to log() produce output when LOGFILE is None (to stderr)
 """
+def set_debug(v = True):
+	global debug
+	debug=v
 
 INSANE_DEBUG = False
 
@@ -47,12 +50,16 @@ How many bytes per KB/MB/etc do we use in calculations?
 Internode uses 1000 (50000 bytes = 50 Kb) in their plans, si units: 1024
 """
 
+def errprint(text):
+	sys.stderr.write("%s\n" % text)
+
 def log(text):
 	"""
 	Log a message with a timestamp
 		if LOGFILE is set, log() will append to that file
-		if DEBUG is set log() will (also) output to stdout
+		if debug is set log() will (also) output to stdout
 	"""
+	global debug
 	ln = time.strftime("%Y-%m-%d %H:%M:%S") + ": " + text
 	if LOGFILE:
 		try:
@@ -60,11 +67,11 @@ def log(text):
 				myfile.write(ln + "\n")
 		except:
 			#cannot write to logfile...
-			print time.strftime("%Y-%m-%d %H:%M:%S") + (": *** ERROR: Cannot log to file: '%s'. Check permissions?" % LOGFILE)
-			print ln
+			errprint(time.strftime("%Y-%m-%d %H:%M:%S") + (": *** ERROR: Cannot log to file: '%s'. Check permissions?" % LOGFILE))
+			errprint(ln)
 
-	if DEBUG:
-		print ln
+	if debug:
+		errprint(ln)
 
 class UpdateError(Exception):
 	"""
@@ -330,12 +337,13 @@ class NodeUtil(object):
 				username = ""
 			if password == None:
 				password = ""
-
-			self.show_prefs()
+			return False
+			#self.show_prefs()
 		else:
 			self.username = username
 			self.password = password
 			self.show_used = show_used
+			return True
 
 	"""
 	Internode API functions.

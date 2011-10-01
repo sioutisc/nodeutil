@@ -1,17 +1,40 @@
 #!/usr/bin/env python
 
 #console-based nodeutil client. does one request, reports, and exits.
+# By Dale Maggee.
 
-print "\nFetching Internode Usage...\n"
+#we won't need node_dialog for teh console app, just nodeutil! :D
 from internode.nodeutil import *
+from optparse import OptionParser
+
+p = OptionParser(usage="Usage: %prog [options]\n\nRetrieves and displays stats on your Internode usage.",version="NodeUtil v%2.1f." % VERSION)
+p.add_option("-v","--verbose", action="store_true", dest="verbose", default=False, help="Show more output")
+p.add_option("-s","--short", action="store_true",dest="short", default=False, help="Show short text (format: '<label>: <number> <unit>')")
+p.add_option("-H","--hunam-readable", action="store_true", dest="hunam_mode", default=False, help="Hunam-readable mode - program output is optimised for sapient lifeforms. This option supersedes everything below, and is the default mode if no options are passed.")
+
+p.add_option("-u","--show-used",action="store_true",dest="used", default=True,help="Show Used Data")
+p.add_option("-r","--show-remaining",action="store_true",dest="remaining", default="True",help="Show Remaining Data")
+p.add_option("-q","--show-quota",action="store_true",dest="quota", default=True,help="Show Quota")
+
+p.add_option("-c","--csv-history",action="store_true",dest="csv",default=False,help="Output usage history data as a comma-separated table. Supersedes all other options.")
+
+#Parse command line...
+(options, args) = p.parse_args()
+
+if options.verbose:
+	set_debug()
 
 log("----------------------------------------")
 log("  Internode Console Usage Meter - Init")
 log("----------------------------------------")
+errprint("\nFetching Internode Usage...\n")
 
 node = NodeUtil()
 
-node.load_prefs()
+if not node.load_prefs():
+	errprint("You have no preferences set, showing dialog...")
+	from internode.node_dialog import *
+	NodeDialog_Config(node)
 
 node.update(True)
 
@@ -20,7 +43,7 @@ while node.status == "Updating":
 	time.sleep(0.5)
 
 if node.status == "OK":
-	print "Usage data retrieved successfully.\n"
+	errprint("Usage data retrieved successfully.\n")
 	print "----------------------------------------------"
 	print "Internode Usage for: %s" % node.username
 	print "----------------------------------------------"
@@ -30,6 +53,6 @@ if node.status == "OK":
 	print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
 	print "\n"
 else:
-	print "There was an error retrieving usage data\n"
+	errprint("There was an error retrieving usage data! >:(\n")
 	sys.exit(1)
 

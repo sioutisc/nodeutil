@@ -123,7 +123,8 @@ class InternodeAwnApp:
 		applet.add_overlay(self.throbber)
 
 		#get preferences...
-		self.nodeutil.load_prefs()
+		if not self.nodeutil.load_prefs():
+			self.show_prefs()
 
 		#setup a main dialog for detailed info...
 		dialog = applet.dialog.new("main")
