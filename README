@@ -10,3 +10,5 @@ For Requirements, see the INSTALL file
 
 run 'sudo ./setup.sh' to install, then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
 
+TODO:
+ - make awn applet resize the icon according to panel size

@@ -148,7 +148,8 @@ class InternodeMeter:
 		# Initialize Internode Usage Checker
 		self.nodeutil = NodeUtil()
 		self.nodeutil.user_agent_text = "GNOME Applet"
-		self.nodeutil.load_prefs()
+		if not self.nodeutil.load_prefs():
+			self.show_prefs()
 		self.set_timeout(True)
 		self.dialog = None
 		applet.connect("button-press-event",self.on_clicked)
