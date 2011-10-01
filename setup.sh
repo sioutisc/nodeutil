@@ -54,8 +54,10 @@ locate_awn
 if [ -z "$GNOMEPREFIX" ] && [ -z "$AWNPREFIX" ]; then
 	#echo "You need to have either (or both) Gnome Panel or Avant Window Navigator installed to use this applet!"
 	#exit 1
-	echo -e "\nNOTICE: This applet probably won't be particularly useful if you're not using gnome-panel or avant-window-navigator. You should probably install one or both of these before proceeding. "
+	echo -e "\nNOTICE: You don't seem to have either gnome-panel or avant-window-navigator installed! You will only be able to use the command-line tools. "
 fi
+
+
 
 if [ -n "$GNOMEPREFIX" ]; then
 	APPPATH="$GNOMEPREFIX/share/internode-applet"
@@ -69,8 +71,33 @@ fi
 
 echo " - Internode Applet files will be installed in '$APPPATH'"
 
+#for dpkg-based systems, try to detect and warn about python-gnomeapplet and awn-extras dependencies, which may not be
+#	installed on a clean system
+if [ -n "`which dpkg`" ]; then
+	echo " - Your system seems to use dpkg, checking for dependencies..."
+	if [ -z "`dpkg -L python-gnomeapplet 2>/dev/null`" ]; then
+		#warn about missing python-gnomeapplet library
+		echo -e "\nNOTICE: it appears that python-gnomeapplet is not installed. You may want to run 'sudo apt-get install python-gnomeapplet' to install it. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
+		read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
+		if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+			apt-get install python-gnomeapplet
+		fi
+	fi
+	
+	if [ -n "$AWNPREFIX" ]; then
+		#look for awnlib
+		if [ -z "`dpkg -L python-awn-extras`" ]; then
+			echo -e "\nNOTICE: it appears that awn is installed, but python-awn-extras is not installed. You may want to run 'sudo apt-get install python-awn-extras' to install it if you intend to use the awn applet. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
+			read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
+			if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+				apt-get install python-awn-extras
+			fi
+		fi	
+	fi
+fi
+
 echo ""
-read -p "Proceed? (Y/N) " c
+read -p "Proceed with install? (Y/N) " c
 if [ -z "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
 	echo -e "\n"
 	exit 1
@@ -130,7 +157,8 @@ if [ -n "$AWNPREFIX" ]; then
 	echo "  killall avant-window-navigator && avant-window-navigator &"
 fi
 if [ -n "$GNOMEPREFIX" ]; then
-	echo "  killall gnome-panel"
+	killall gnome-panel
+	echo "  killall gnome-panel (shouldn't be required - I just ran this - your panel should be restarting now!)"
 fi
 echo -e "Or you can just log out and back in. or reboot. or alt-prtscn-k. or maybe ctrl-alt-bksp. or sudo killall xinit."
 echo -e "Once you've restarted your panel app(s), you should be able to add the internode applet to the Gnome panel and/or AWN\n"
