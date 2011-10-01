@@ -85,9 +85,8 @@ class InternodeAwnApp:
 		#HOWTO: show a notification:
 		#self.notification = applet.notify.create_notification("Alert", NodeIcons.logo, "dialog-warning", 20)
 		#self.notification.show()
-
-		applet.set_icon_pixbuf(NodeIcons.icons["x"])
-
+		s = applet.get_size()
+		applet.set_icon_pixbuf(NodeIcons.icons["x"].scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 		#tooltip...
 		applet.set_tooltip_text("Internode Usage Meter")
 
@@ -291,7 +290,13 @@ class InternodeAwnApp:
 			# Show error image
 			icon = NodeIcons.icons["x"]
 
-		self.applet.set_icon_pixbuf(icon)
+		#self.applet.set_icon_pixbuf(icon)
+
+		#ai = self.applet.get_icon()
+		#scale icon...
+		s = self.applet.get_size()
+		self.applet.set_icon_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
+		#ai.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER)) #INTERP_BILINEAR
 
 	def show_graph(self, widget = None, data = None):
 		"""

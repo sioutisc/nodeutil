@@ -184,19 +184,22 @@ class InternodeMeter:
 			
 			# No error
 			if percent > 87:
-				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "100"])
+				icon = NodeIcons.icons[prefix + "100"]
 			elif percent > 62:
-				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "75"])
+				icon = NodeIcons.icons[prefix + "75"]
 			elif percent > 37:
-				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "50"])
+				icon = NodeIcons.icons[prefix + "50"]
 			elif percent > 12:
-				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "25"])
+				icon = NodeIcons.icons[prefix + "25"]
 			else:
-				self.image.set_from_pixbuf(NodeIcons.icons[prefix + "0"])
+				icon = NodeIcons.icons[prefix + "0"]
 		else:
 			# Show error image
-			self.image.set_from_pixbuf(NodeIcons.icons["x"])
-
+			icon = NodeIcons.icons["x"]
+		#al = self.image.get_allocation().height
+		s = self.image.get_allocation().height
+		#s = self.image.get_height
+		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 
 	def set_timeout(self, enable = True, interval = 500):
 		"""
