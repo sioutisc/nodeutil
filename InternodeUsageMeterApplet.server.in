@@ -1,6 +1,6 @@
 <oaf_info>
 	<oaf_server iid="OAFIID:InternodeUsageMeterApplet_Factory"
-		type="exe" location="@PREFIX@/bin/internode-applet.py">
+		type="exe" location="@PREFIX@/internode-applet.py">
 		
 		<oaf_attribute name="repo_ids" type="stringv">
 			<item value="IDL:Bonobo/GenericFactory:1.0"/>

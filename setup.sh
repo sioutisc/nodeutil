@@ -80,9 +80,12 @@ echo -e "\nOkie Dokie Doctor Jones, hold on to your potatoes!\n"
 #copy files into the application dir...
 
 #array containing files to copy to $APPPATH
-internode_files=( "awn-applet.py" "INSTALL" "internode-applet.glade" "internode-applet.py" "internode.desktop" "InternodeUsageMeterApplet.server.in" "Makefile" "run_in_window" "setup.sh" "README" )
+internode_files=( "awn-applet.py" "INSTALL" "internode-applet.glade" "internode-applet.py" "internode.desktop" "InternodeUsageMeterApplet.server.in" "Makefile" "run_in_window" "setup.sh" "README" "internode-usage-report" )
 #array containing folders to copy (recursively, with all files) to $APPPATH
 internode_dirs=( "internode" "pixmaps" )
+
+#array of files to mark as executable for everyone - should be a path relative to $APPPATH:
+make_executable=( "internode-applet.py" "awn-applet.py" "run_in_window" "setup.sh" "internode-usage-report" )
 
 if [ ! -d "$APPPATH" ]; then
 	echo " - Creating '$APPPATH'..."
@@ -98,7 +101,9 @@ done
 for d in "${internode_dirs[@]}"; do
 	cp -Rv $d $APPPATH/
 done
-
+for f in "${make_executable[@]}"; do
+	chmod a+x $APPPATH/$f
+done
 #now that all our files are in $APPPATH, create symlinks for awn and gnome to find...
 echo ", Done."
 
@@ -106,7 +111,7 @@ if [ -n "$GNOMEPREFIX" ]; then
 	echo " - Installing GNOME Applet..."
 	cp $APPPATH/InternodeUsageMeterApplet.server.in $APPPATH/InternodeUsageMeterApplet.server
 	#TODO: replace "@PREFIX@" in the .server file with $APPPATH
-	sed -i 's|@PREFIX@|$APPPATH|g' $APPPATH/InternodeUsageMeterApplet.server
+	sed -i "s|@PREFIX@|$APPPATH|g" $APPPATH/InternodeUsageMeterApplet.server
 	ln -s $APPPATH/InternodeUsageMeterApplet.server $GNOMEPREFIX/$GNOMESUFFIX/InternodeUsageMeterApplet.server
 fi
 
@@ -125,7 +130,7 @@ if [ -n "$AWNPREFIX" ]; then
 	echo "  killall avant-window-navigator && avant-window-navigator &"
 fi
 if [ -n "$GNOMEPREFIX" ]; then
-	echo "  killall gnome-panel && gnome-panel &"
+	echo "  killall gnome-panel"
 fi
 echo -e "Or you can just log out and back in. or reboot. or alt-prtscn-k. or maybe ctrl-alt-bksp. or sudo killall xinit."
 echo -e "Once you've restarted your panel app(s), you should be able to add the internode applet to the Gnome panel and/or AWN\n"

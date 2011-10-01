@@ -29,7 +29,7 @@ from node_dialog import *
 import sys
 import os
 
-from constants import *
+#from constants import *
 
 try:
 	if not sys.modules.has_key('gtk'):
