@@ -152,16 +152,31 @@ fi
 echo " - Installing 'internode-usage-report' command-line app..."
 ln -s $APPPATH/internode-usage-report /usr/bin/internode-usage-report
 #everything's perfect, tell the user how to get the applets
+echo "-------------------------------------------------------------------------------"
 echo -e "\n\nInstallation is complete. You'll need to restart the relevant program(s) with commands like:"
 if [ -n "$AWNPREFIX" ]; then
 	echo "  killall avant-window-navigator && avant-window-navigator &"
 fi
 if [ -n "$GNOMEPREFIX" ]; then
-	killall gnome-panel
-	echo "  killall gnome-panel (shouldn't be required - I just ran this - your panel should be restarting now!)"
+	echo "  killall gnome-panel"
 fi
-echo -e "Or you can just log out and back in. or reboot. or alt-prtscn-k. or maybe ctrl-alt-bksp. or sudo killall xinit."
+echo -e "Or you can just log out and back in.\n"
 echo -e "Once you've restarted your panel app(s), you should be able to add the internode applet to the Gnome panel and/or AWN\n"
+read -p "Shall I try to restart your panel app(s) now (Y/N)?" c
+if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+	if [ -n "$GNOMEPREFIX" ]; then
+		echo " - Killing gnome-panel..."
+		killall gnome-panel
+	fi
+	if [ -n "$AWNPREFIX" ]; then
+		echo " - Killing avant-window-navigator..."
+		killall avant-window-navigator
+		sudo -u1000 avant-window-navigator &
+		echo "    NOTE: You'll probably have to run 'avant-window-navigator' yourself"
+	fi
+	echo -e "Done!\n\n"
+fi
+
 echo -e "You can get a usage report from the command-line by typing 'internode-usage-report'.\n"
 echo "You can also run '$APPPATH/run_in_window' to get the GNOME applet in it's own small window."
 echo -e "\nIf you have problems, check out /tmp/internode-applet.log. You can also email this file to antisol@internode.on.net with 'internode applet' in the subject."

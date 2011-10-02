@@ -27,8 +27,8 @@ output_extract_script() {
 cat <<EndOfHeader
 #!/bin/bash
 echo "Self-extracting bash script. By Dale Maggee."
-echo "Extracting..."
 target=\`mktemp -d /tmp/XXXXXXXXX\`
+echo -n "Extracting to \$target..."
 
 EndOfHeader
 
@@ -45,19 +45,21 @@ fi
 
 cat <<EndOfFooter
 
-echo "(temp dir: \$target)"
-
 #do the extraction...
 ARCHIVE=\`awk '/^---BEGIN TGZ DATA---/ {print NR + 1; exit 0; }' \$0\`
 
 tail -n+\$ARCHIVE \$0 | tar xz -C \$target
 
+echo -en ", Done.\nRunning Installer..."
+
 CDIR=\`pwd\`
 cd \$target
 ./installer
 
+echo -en ", Done.\nRemoving temp dir..."
 cd \$CDIR
 rm -rf \$target
+echo -e ", Done!\n\nAll Done!\n"
 
 exit 0
 ---BEGIN TGZ DATA---

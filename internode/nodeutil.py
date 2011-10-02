@@ -111,6 +111,8 @@ class NodeUtil(object):
 		self.show_used = False
 
 		self._time = 0
+		#how long retrieval took
+		self._took = 0
 		self._percent_used = 0
 		self._percent_remaining = 0
 		self._quota = 0
@@ -201,6 +203,17 @@ class NodeUtil(object):
 		with self.lock:
 			self._time = value
 	time = property(get_time,set_time)
+
+	# self.took is a float giving us the number of seconds
+	#	we spent updating (i.e: how long it took to retrieve
+	#	data from internode)
+	def get_took(self):
+		with self.lock:
+			return self._took
+	def set_took(self,value):
+		with self.lock:
+			self._took = value
+	took = property(get_took,set_took)
 
 	def get_percent_used(self):
 		with self.lock:
@@ -564,15 +577,20 @@ class NodeUtil(object):
 			if self.status != "Error": self.get_history(service)
 			if self.status != "Error": self.get_service_info(service)
 			if self.status != "Error": self.ip = self.fetch_ip_address()
-
-			if (self.status == "Updating"):
+	
+			#don't set status to OK if an error occurred:
+			if (self.status != "Error"):
 				self.status = "OK"
 		except:
 			if self.status != "Error":	#don't overwrite existing error message
 				self.status = "Error"
 				self.set_error("An unexpected error occurred")
 
-		log("Nodeutil.update complete")
+		#calculate how long we took and populate self.took
+		took = time.time() - self.time
+		self.took = took
+		log("Nodeutil.update complete after %2.3f seconds" % took)
+
 		#thread.interrupt_main()
 
 		#thread exits silently...
