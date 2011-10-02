@@ -394,8 +394,8 @@ class NodeUtil(object):
 			self.used = float(self.get_text(traffic)) / ONE_KB / ONE_KB
 			self.remaining = self.quota - self.used
 
-			self.percent_remaining = int(round(self.remaining / self.quota * 100))
-			self.percent_used = int(round(self.used / self.quota * 100))
+			self.percent_remaining = self.remaining / self.quota * 100
+			self.percent_used = self.used / self.quota * 100
 
 			self.daysleft = get_date_difference(traffic.getAttribute('rollover'))
 

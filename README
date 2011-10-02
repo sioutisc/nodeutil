@@ -1,8 +1,21 @@
-Internode Usage Meter for GNOME and Avant Window Navigator
+Internode Usage Meters for Linux Systems (Gnome / AWN / Console)
 
 By Dale Maggee
 
 Originally Based on Sam Polenhz's GNOME Usage Meter
+
+New Features added from Sam's version:
+	- removed hardcoded paths - file locations are detected at runtime
+	- back-end has been largely re-written to perform updates asynchronously, giving the possibility of animated icons
+	- GUI components have been separated from applets, allowing multiple applets to use the same Interface code
+	* new avant window navigator applet!
+	* new command-line tool! use it in your bash scripts!
+	- more details are retrieved, including your internet IP address, speed, and carrier
+	- applets have a 'details' dialog, which shows more detailed information and the history graph
+	- Copy your IP to clipboard
+	- history graph presets (1y, 30d, 'this billing month')
+	- automatic version checking
+	* New, more friendly (and hopefully flexible) self-extracting installer!
 
 GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
 

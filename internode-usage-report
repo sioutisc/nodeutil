@@ -5,34 +5,102 @@
 
 #we won't need node_dialog for teh console app, just nodeutil! :D
 from internode.nodeutil import *
-from optparse import OptionParser
+from optparse import *
 
 p = OptionParser( usage="Usage: %%prog [options]\n\nRetrieves and displays stats on your Internode usage.\n\nIn order to be useful for scripting purposes, 'Internode report'-type info (e.g: Usage Report / Error messages) are sent to STDOUT, while things like status information (e.g: 'fetching') and log messages (when -v is used) are sent to STDERR.\n\nPart of the NodeUtils Suite v%2.1f, (C)opyright Dale Maggee, 2011. BSD License." % VERSION,
 		version="NodeUtil v%2.1f." % VERSION )
 
-p.add_option( "-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show more output" )
+#p.add_option( "-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show more (debugging) output" )
 
-p.add_option( "-s", "--short", action="store_true",dest="short", default=False, 
-		help="Show short text (format: '<label>: <number> <unit>')" )
+#p.add_option( "-s", "--short", action="store_true",dest="short", default=False, 
+#		help="Show short text (format: '<label>: <number> <unit>')" )
 
-p.add_option( "-H", "--hunam-readable", action="store_true", dest="hunam_mode", default=False, 
-		help="Hunam-readable mode - program output is optimised for sapient lifeforms. This option supersedes everything below, and is the default mode if no options are passed.")
 
-p.add_option( "-u", "--show-used", action="store_true", dest="used", default=True, help="Show Used Data" )
+##################################################
 
-p.add_option( "-r", "--show-remaining", action="store_true", dest="remaining", default="True", 
-		help="Show Remaining Data")
+p.add_option("-u","--used", action="store_false", 
+	dest="used", default=True, help="Don't Show MB Used.")
 
-p.add_option( "-q", "--show-quota", action="store_true", dest="quota", default=True, help="Show Quota" )
+p.add_option("-q","--quota", action="store_false",
+	dest="quota", default=True, help="Don't Show Plan Quota")
 
-p.add_option( "-c", "--csv-history", action="store_true", dest="csv", default=False, 
-		help="Output usage history data as a comma-separated table. Supersedes all other options." )
+p.add_option("-U","--%used", action="store_false",
+	dest="percent_used", default=True, help="Don't Show Percentage of Quota Used.")
+
+p.add_option("-r","--remaining", action="store_false",
+	dest="remaining", default=True, help="Don't Show MB Remaining.")
+
+p.add_option("-R","--%remaining", action="store_false",
+	dest="percent_remaining", default=True, help="Don't Show Percentage of Quota Remaining.")
+
+p.add_option("-d","--daysleft", action="store_false",
+	dest="daysleft", default=True, help="Don't Show Days left in plan.")
+
+p.add_option("-M","--mb-per-day", action="store_false",
+	dest="mbperday", default=True, help="Don't Show MB remaining / days left")
+
+p.add_option("-D","--rollover", action="store_true",
+	dest="rollover", default=False, help="Show Plan Rollover Date.")
+
+p.add_option("-I","--interval", action="store_true",
+	dest="plan_interval", default=False, help="Show How often plan resets")
+
+p.add_option("-p","--plan", action="store_true",
+	dest="plan", default=False, help="Show Name of Internode Plan")
+
+p.add_option("-s","--speed", action="store_true",
+	dest="speed", default=False, help="Show Plan Speed")
+
+p.add_option("-^","--uploads", action="store_true",
+	dest="uploads_charged", default=False, help="Show uploads charged' indicator")
+
+p.add_option("-C","--carrier", action="store_true",
+	dest="carrier", default=False, help="Show Line Carrier")
+
+p.add_option("-i","--ip", action="store_true",
+	dest="ip", default=False, help="Show Internet IP Address")
+
+p.add_option("-a","--all", action="store_true",
+	dest="all", default=False, help="Show Everything")
+
+p.add_option("-c","--csv", action="store_true",
+	dest="csv", default=False, help="Show Output CSV History")
+
+p.add_option("-m","--short", action="store_true",
+	dest="short", default=False, help="Show shorter, machine-readable output (format: <label>: <figure>).")
+
+p.add_option("-v","--verbose", action="store_true",
+	dest="verbose", default=False, help="Show Show debugging output")
+
+
+
+##################################################
+
+#p.add_option_group(g)
+
+#p.add_option("-c","--csv",action="store_true",dest="csv",default=False,help="Output comma-separated history data.")
 
 #Parse command line...
 (options, args) = p.parse_args()
 
 if options.verbose:
 	set_debug()
+
+if options.all:
+	options.used = True
+	options.quota = True
+	options.percent_used = True
+	options.remaining = True
+	options.percent_remaining = True
+	options.daysleft = True
+	options.mbperday = True
+	options.rollover = True
+	options.plan_interval = True
+	options.plan = True
+	options.speed = True
+	options.uploads_charged = True
+	options.carrier = True
+	options.ip = True
 
 log("----------------------------------------")
 log("  Internode Console Usage Meter - Init")
@@ -54,14 +122,114 @@ while node.status == "Updating":
 
 if node.status == "OK":
 	errprint("Usage data retrieved successfully (%2.3f seconds).\n" % node.took)
-	print "----------------------------------------------"
-	print "Internode Usage for: %s" % node.username
-	print "----------------------------------------------"
-	print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
-	print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
-	print " - %1d days remain before your quota resets." % node.daysleft
-	print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
-	print "\n"
+
+	if not options.short:
+		print "----------------------------------------------"
+		print "Internode Usage for: %s" % node.username
+		print "----------------------------------------------"
+
+	#print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
+	#print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
+	#print " - %1d days remain before your quota resets." % node.daysleft
+	#print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
+	#print "\n"
+	
+	#####################################
+	
+	if options.used:
+		if options.short:
+			print "Used: %s" % node.used
+		else:
+			print " - You have used %2.2f MB" % node.used
+	
+	if options.quota:
+		if options.short:
+			print "Quota: %s" % node.quota
+		else:
+			print " - Your quota is %2d MB" % node.quota
+	
+	if options.percent_used:
+		if options.short:
+			print "%% Used: %s" % node.percent_used
+		else:
+			print " - You have used %3.2f %% of your quota" % node.percent_used
+	
+	if options.remaining:
+		if options.short:
+			print "Remaining: %s" % node.remaining
+		else:
+			print " - You have %2.2f MB remaining" % node.remaining
+	
+	if options.percent_remaining:
+		if options.short:
+			print "%% Remaining: %s" % node.percent_remaining
+		else:
+			print " - You have %3.2f %% of your quota remaining" % node.percent_remaining
+	
+	if options.daysleft:
+		if options.short:
+			print "Days Left: %s" % node.daysleft
+		else:
+			print " - There are %1d day(s) left until your plan resets." % node.daysleft
+	
+	if options.mbperday:
+		days = node.daysleft
+		if days == 0: 
+			days = 1
+		mbperday = float(node.remaining / days)
+		if options.short:
+			print "MB/day remaining: %s" % mbperday
+		else:
+			print " - This works out to %2.2f MB/day remaining." % mbperday
+	
+	if options.rollover:
+		if options.short:
+			print "Rollover Date: %s" % node.rollover
+		else:
+			print " - Your plan rolls over on %s" % node.rollover
+	
+	if options.plan_interval:
+		if options.short:
+			print "Interval: %s" % node.plan_interval
+		else:
+			print " - Your Plan interval is %s" % node.plan_interval
+	
+	if options.plan:
+		if options.short:
+			print "Plan: %s" % node.plan
+		else:
+			print " - You are on the '%s' plan" % node.plan
+	
+	if options.speed:
+		if options.short:
+			print "Plan Speed: %s" % node.speed
+		else:
+			print " - Your plan speed is %s" % node.speed
+	
+	if options.uploads_charged:
+		if options.short:
+			print "Uploads Count: %s" % node.uploads_charged
+		else:
+			if node.uploads_charged:
+				s = "ARE"
+			else:
+				s = "are NOT"
+			print " - Uploads %s charged" % s
+	
+	if options.carrier:
+		if options.short:
+			print "Carrier: %s" % node.carrier
+		else:
+			print " - Your Line Carrier is %s" % node.carrier
+	
+	if options.ip:
+		if options.short:
+			print "Internet IP: %s" % node.ip
+		else:
+			print " - Your Internet IP address is %s" % node.ip
+
+#####################################
+
 else:
 	errprint("Error (%2.3f seconds): %s\n" % (node.took, node.error))
 	sys.exit(1)
