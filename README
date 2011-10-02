@@ -2,7 +2,7 @@ Internode Usage Meter for GNOME and Avant Window Navigator
 
 By Dale Maggee
 
-Based on Sam Polenhz's GNOME Usage Meter
+Originally Based on Sam Polenhz's GNOME Usage Meter
 
 GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
 
@@ -11,4 +11,15 @@ For Requirements, see the INSTALL file
 run 'sudo ./setup.sh' to install, then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
 
 TODO:
- - make awn applet resize the icon according to panel size
+	- fix bugs
+	- implement alert system (alerts when you reach a certain usage level)
+	- option to disable version checks
+	- make timing configurable (settings for 'refresh' and 'refresh if error')
+
+
+KNOWN ISSUES:
+	1. (medium-high - AWN Applet only) The AWN applet seems to crash randomly on right-click. The error message will be an X window system error. I have no idea what is causing this, since it seems to be completely random. I'd love to hear ideas on how I can debug this!
+
+	2. (low - GNOME Applet only) The GNOME applet doesn't resize with the panel completely smoothly, and the icon is invisible for panels less than 24px in height. This is due to the gnomeapplet reporting it's size incorrectly, I haven't figured out how to get the proper size of the applet for resizing.
+
+	

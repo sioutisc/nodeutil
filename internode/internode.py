@@ -104,7 +104,8 @@ class InternodeMeter:
 		Initialises the usage meter
 		"""
 		log("---------------------------------------------------")
-		log("Internode GNOME Applet - Init")
+		log("Internode GNOME Applet (%s) - Init" % INTERNODE_GNOMEAPPLET)
+		log("%s" % applet)
 
 		# Initialize GConf
 		self.gconf_client = gconf.client_get_default()
@@ -132,12 +133,12 @@ class InternodeMeter:
 		icon = NodeIcons.icons["x"]
 		#s = self.applet.get_size() - 2
 		s = self.applet.get_size()
-		#log("s1: %s" % s)
-		s2 = s - (s % 16) - 16
+		#log("Reported size: %s" % s)
+		s2 = s - (s % 8) - 8
 		if s2 <= (s - 3):
 			s = s2
+		if s < 25: s= 25
 		#log("s2: %s" % s)
-		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 		
 		#hardcoded menu XML:
@@ -169,6 +170,7 @@ class InternodeMeter:
 		self.set_timeout(True)
 		self.dialog = None
 		applet.connect("button-press-event",self.on_clicked)
+		applet.connect("change-size",self.on_resize)
 
 		# Connect background callback
 		applet.connect("change_background", self.change_background)
@@ -184,6 +186,9 @@ class InternodeMeter:
 		#update nodeutil...
 		self.nodeutil.update(True)
 		log("Init Complete")
+
+	def on_resize(self, applet, new_size):
+		log("Resize event (%s)" % new_size)
 
 	def update_image(self):
 		"""
@@ -213,15 +218,21 @@ class InternodeMeter:
 			# Show error image
 			icon = NodeIcons.icons["x"]
 
+		#GRRR: This, nor [image|hbox|panel].get_allocation(), gets the actual panel size!
+		#	they seem to return only from a list (something like: 24, 36, 48, 64, 80, 128),
+		#	and whichever you are closest to, meaning that sometimes 
+		#	get_size() returns greater than actual panel height, giving you
+		#	a cut-off icon! WTF?!? >:(
 		s = self.applet.get_size()
 		#log("s1: %s" % s)
-		s2 = s - (s % 16) - 16
+		s2 = s - (s % 8) - 8
 		if s2 <= s:
 			s = s2
+		if s < 25: s= 25
 		#log("s2: %s" % s)
 		self.image.set_from_pixbuf(icon.scale_simple(s,s,gtk.gdk.INTERP_HYPER))
 
-	def set_timeout(self, enable = True, interval = 500):
+	def set_timeout(self, enable = True, interval = 1000):
 		"""
 		Sets or unsets the timeout to automatically update the usage meter
 		"""
