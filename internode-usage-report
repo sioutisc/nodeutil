@@ -18,6 +18,9 @@ p = OptionParser( usage="Usage: %%prog [options]\n\nRetrieves and displays stats
 
 ##################################################
 
+p.add_option("-H","--hunam-readable", action="store_true",
+	dest="hunam", default=False, help="Hunam-readable mode: Generates a report optimized for the viewing pleasure of sapient lifeforms. This option is the default if no options are specified. If -H is passed, this disables all other options except for -v.")
+
 p.add_option("-u","--used", action="store_false", 
 	dest="used", default=True, help="Don't Show MB Used.")
 
@@ -48,6 +51,9 @@ p.add_option("-I","--interval", action="store_true",
 p.add_option("-p","--plan", action="store_true",
 	dest="plan", default=False, help="Show Name of Internode Plan")
 
+p.add_option("-n","--username", action="store_true",
+	dest="username", default=False, help="Show Internode Username")
+
 p.add_option("-s","--speed", action="store_true",
 	dest="speed", default=False, help="Show Plan Speed")
 
@@ -61,10 +67,10 @@ p.add_option("-i","--ip", action="store_true",
 	dest="ip", default=False, help="Show Internet IP Address")
 
 p.add_option("-a","--all", action="store_true",
-	dest="all", default=False, help="Show Everything")
+	dest="all", default=False, help="Show Everything. Overrides everything except -H, -v, and -m")
 
 p.add_option("-c","--csv", action="store_true",
-	dest="csv", default=False, help="Show Output CSV History")
+	dest="csv", default=False, help="Output CSV History")
 
 p.add_option("-m","--short", action="store_true",
 	dest="short", default=False, help="Show shorter, machine-readable output (format: <label>: <figure>).")
@@ -101,6 +107,12 @@ if options.all:
 	options.uploads_charged = True
 	options.carrier = True
 	options.ip = True
+	options.username = True
+
+#if no options were passed, run in Hunam mode:
+if (len(sys.argv) - 1) == 0:
+	#errprint("Hunam-Readable Mode Enabled")
+	options.hunam = True
 
 log("----------------------------------------")
 log("  Internode Console Usage Meter - Init")
@@ -123,112 +135,132 @@ while node.status == "Updating":
 if node.status == "OK":
 	errprint("Usage data retrieved successfully (%2.3f seconds).\n" % node.took)
 
-	if not options.short:
+	if options.csv:
+		#output CSV history...
 		print "----------------------------------------------"
-		print "Internode Usage for: %s" % node.username
+		print "Internode Usage History for: %s" % node.username
 		print "----------------------------------------------"
+		#print node.history
+		for day in node.history:
+			dt = day[0]
+			y = int(dt[0:2]) + 2000
+			m = int(dt[2:4])
+			d = int(dt[4:6])
+			print "%02d-%02d-%4d\t%9.3f MB" % (d,m,y,float(day[1]))
 
-	#print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
-	#print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
-	#print " - %1d days remain before your quota resets." % node.daysleft
-	#print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
-	#print "\n"
+	elif options.hunam:
+		if not options.short:
+			print "----------------------------------------------"
+			print "Internode Usage for: %s" % node.username
+			print "----------------------------------------------"
+
+		print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
+		print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
+		print " - %1d days remain before your quota resets." % node.daysleft
+		print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
+		print "\n"
+	else:
+		#####################################
 	
-	#####################################
-	
-	if options.used:
-		if options.short:
-			print "Used: %s" % node.used
-		else:
-			print " - You have used %2.2f MB" % node.used
-	
-	if options.quota:
-		if options.short:
-			print "Quota: %s" % node.quota
-		else:
-			print " - Your quota is %2d MB" % node.quota
-	
-	if options.percent_used:
-		if options.short:
-			print "%% Used: %s" % node.percent_used
-		else:
-			print " - You have used %3.2f %% of your quota" % node.percent_used
-	
-	if options.remaining:
-		if options.short:
-			print "Remaining: %s" % node.remaining
-		else:
-			print " - You have %2.2f MB remaining" % node.remaining
-	
-	if options.percent_remaining:
-		if options.short:
-			print "%% Remaining: %s" % node.percent_remaining
-		else:
-			print " - You have %3.2f %% of your quota remaining" % node.percent_remaining
-	
-	if options.daysleft:
-		if options.short:
-			print "Days Left: %s" % node.daysleft
-		else:
-			print " - There are %1d day(s) left until your plan resets." % node.daysleft
-	
-	if options.mbperday:
-		days = node.daysleft
-		if days == 0: 
-			days = 1
-		mbperday = float(node.remaining / days)
-		if options.short:
-			print "MB/day remaining: %s" % mbperday
-		else:
-			print " - This works out to %2.2f MB/day remaining." % mbperday
-	
-	if options.rollover:
-		if options.short:
-			print "Rollover Date: %s" % node.rollover
-		else:
-			print " - Your plan rolls over on %s" % node.rollover
-	
-	if options.plan_interval:
-		if options.short:
-			print "Interval: %s" % node.plan_interval
-		else:
-			print " - Your Plan interval is %s" % node.plan_interval
-	
-	if options.plan:
-		if options.short:
-			print "Plan: %s" % node.plan
-		else:
-			print " - You are on the '%s' plan" % node.plan
-	
-	if options.speed:
-		if options.short:
-			print "Plan Speed: %s" % node.speed
-		else:
-			print " - Your plan speed is %s" % node.speed
-	
-	if options.uploads_charged:
-		if options.short:
-			print "Uploads Count: %s" % node.uploads_charged
-		else:
-			if node.uploads_charged:
-				s = "ARE"
+		if options.used:
+			if options.short:
+				print "Used: %s" % node.used
 			else:
-				s = "are NOT"
-			print " - Uploads %s charged" % s
+				print " - You have used %2.2f MB" % node.used
 	
-	if options.carrier:
-		if options.short:
-			print "Carrier: %s" % node.carrier
-		else:
-			print " - Your Line Carrier is %s" % node.carrier
+		if options.quota:
+			if options.short:
+				print "Quota: %s" % node.quota
+			else:
+				print " - Your quota is %2d MB" % node.quota
 	
-	if options.ip:
-		if options.short:
-			print "Internet IP: %s" % node.ip
-		else:
-			print " - Your Internet IP address is %s" % node.ip
+		if options.percent_used:
+			if options.short:
+				print "%% Used: %s" % node.percent_used
+			else:
+				print " - You have used %3.2f %% of your quota" % node.percent_used
+	
+		if options.remaining:
+			if options.short:
+				print "Remaining: %s" % node.remaining
+			else:
+				print " - You have %2.2f MB remaining" % node.remaining
+	
+		if options.percent_remaining:
+			if options.short:
+				print "%% Remaining: %s" % node.percent_remaining
+			else:
+				print " - You have %3.2f %% of your quota remaining" % node.percent_remaining
+	
+		if options.daysleft:
+			if options.short:
+				print "Days Left: %s" % node.daysleft
+			else:
+				print " - There are %1d day(s) left until your plan resets." % node.daysleft
+	
+		if options.mbperday:
+			days = node.daysleft
+			if days == 0: 
+				days = 1
+			mbperday = float(node.remaining / days)
+			if options.short:
+				print "MB/day remaining: %s" % mbperday
+			else:
+				print " - This works out to %2.2f MB/day remaining." % mbperday
+	
+		if options.rollover:
+			if options.short:
+				print "Rollover Date: %s" % node.rollover
+			else:
+				print " - Your plan rolls over on %s" % node.rollover
+	
+		if options.plan_interval:
+			if options.short:
+				print "Interval: %s" % node.plan_interval
+			else:
+				print " - Your Plan interval is %s" % node.plan_interval
+	
+		if options.plan:
+			if options.short:
+				print "Plan: %s" % node.plan
+			else:
+				print " - You are on the '%s' plan" % node.plan
 
-#####################################
+		if options.username:
+			if options.short:
+				print "Username: %s" % node.username
+			else:
+				print " - Your Internode username is '%s'" % node.username
+	
+		if options.speed:
+			if options.short:
+				print "Plan Speed: %s" % node.speed
+			else:
+				print " - Your plan speed is %s" % node.speed
+	
+		if options.uploads_charged:
+			if options.short:
+				print "Uploads Count: %s" % node.uploads_charged
+			else:
+				if node.uploads_charged:
+					s = "ARE"
+				else:
+					s = "are NOT"
+				print " - Uploads %s charged" % s
+	
+		if options.carrier:
+			if options.short:
+				print "Carrier: %s" % node.carrier
+			else:
+				print " - Your Line Carrier is %s" % node.carrier
+		
+		if options.ip:
+			if options.short:
+				print "Internet IP: %s" % node.ip
+			else:
+				print " - Your Internet IP address is %s" % node.ip
+	
+		#####################################
 
 else:
 	errprint("Error (%2.3f seconds): %s\n" % (node.took, node.error))

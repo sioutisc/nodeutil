@@ -15,6 +15,7 @@ New Features added from Sam's version:
 	- Copy your IP to clipboard
 	- history graph presets (1y, 30d, 'this billing month')
 	- automatic version checking
+	* New Hi-res, auto-sizing applet icons!
 	* New, more friendly (and hopefully flexible) self-extracting installer!
 
 GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
