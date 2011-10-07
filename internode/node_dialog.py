@@ -250,9 +250,9 @@ class NodeDialog_Main(NodeDialog):
 
 			self.get_widget("rate_left").set_markup(
 				'<span size="16000"><b>%2.2f</b> MB / Day</span> remaining' %
-					(self.nodeutil.remaining / self.nodeutil.daysleft))
+					self.nodeutil.mbperday)
 
-			rate = (self.nodeutil.remaining * 1024) / (self.nodeutil.daysleft * 24 * 60 * 60)
+			rate = (self.nodeutil.mbperday * 1024) / (24 * 60 * 60)
 
 			self.get_widget("rate_suggest").set_markup(
 				'Suggested download rate: <span size="12000"><b>%3.2f</b> KB/s</span>' % rate)

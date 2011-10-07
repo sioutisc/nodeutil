@@ -157,7 +157,7 @@ if node.status == "OK":
 		print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
 		print " - You have %2.2f MB remaining. ( %2.2f%% )" % (node.remaining, ((node.remaining / node.quota) * 100))
 		print " - %1d days remain before your quota resets." % node.daysleft
-		print " - This gives you %2.2f MB / day." % (node.remaining / node.daysleft)
+		print " - This gives you %2.2f MB / day." % (node.mbperday)
 		print "\n"
 	else:
 		#####################################
@@ -199,14 +199,10 @@ if node.status == "OK":
 				print " - There are %1d day(s) left until your plan resets." % node.daysleft
 	
 		if options.mbperday:
-			days = node.daysleft
-			if days == 0: 
-				days = 1
-			mbperday = float(node.remaining / days)
 			if options.short:
-				print "MB/day remaining: %s" % mbperday
+				print "MB/day remaining: %s" % node.mbperday
 			else:
-				print " - This works out to %2.2f MB/day remaining." % mbperday
+				print " - This works out to %2.2f MB/day remaining." % node.mbperday
 	
 		if options.rollover:
 			if options.short:

@@ -263,6 +263,15 @@ class NodeUtil(object):
 			self._daysleft = value
 	daysleft = property(get_daysleft,set_daysleft)
 
+	def get_mbperday(self):
+		with self.lock:
+			days = self.daysleft
+			if days == 0: 
+				days = 1
+			return float(self.remaining / days)
+
+	mbperday = property(get_mbperday)
+
 	def get_history(self):
 		with self.lock:
 			return self._history

@@ -215,11 +215,9 @@ class InternodeAwnApp:
 			else:
 				daystring = 'days'
 
-			rate_per_day = self.nodeutil.remaining / self.nodeutil.daysleft
-
 			tiptext = "Internode usage for: %s\n%.2f / %iMB %s\n%i %s (%i MB / day) remaining\nLast Update: %s ago" % \
 				(self.nodeutil.username,usage, self.nodeutil.quota, status, self.nodeutil.daysleft,
-					daystring,rate_per_day,friendly_time(time.time() - self.nodeutil.time))
+					daystring,node.mbperday,friendly_time(time.time() - self.nodeutil.time))
 
 			self.overlay.props.text = "%i%%" % percent
 			self.main_dialog.refresh()
