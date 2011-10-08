@@ -196,7 +196,7 @@ class NodeDialog_Main(NodeDialog):
 		notebook.set_show_tabs(tabs_visible)
 
 		glade.get_widget("btnCopyIP").connect("clicked",self.on_copy_ip_click)
-		glade.get_widget("lnkVersionCheck").set_uri('http://users.on.net/~antisol/nodeutil/version-check.php?v=%s' % VERSION)
+		glade.get_widget("lnkVersionCheck").set_uri('http://antisol.org/nodeutil/version-check.php?v=%s' % VERSION)
 				
 		self.glade = glade
 		self.controls = controls
@@ -395,7 +395,7 @@ class NodeDialog_Alert(NodeDialog_UsageAlert):
 
 	def download(self,widget = None,data = None):
 		os.spawnlp(os.P_NOWAIT,"xdg-open","xdg-open",
-			"http://users.on.net/~antisol/nodeutil/")
+			"http://antisol.org/nodeutil/download")
 		self.close()
 
 	def set_text(self,text):

@@ -46,7 +46,17 @@ locate_gnome_panel() {
 	return 0
 }
 
-echo -e "\nInternode Applet for GNOME and AWN - Installer.\n\nSearching for Gnome / AWN..."
+echo -e "\nThe NodeUtil Suite - Installer.\n"
+
+#check dependencies...
+if ./checkdeps; then
+	echo "No vital dependencies are missing, good."
+else 
+	echo -e "\n\nVital dependencies are missing, aborting install."
+	exit 1
+fi	
+
+echo -e "Searching for Gnome / AWN..."
 
 locate_gnome_panel
 locate_awn
@@ -71,35 +81,37 @@ fi
 
 echo " - Internode Applet files will be installed in '$APPPATH'"
 
+
+
 #for dpkg-based systems, try to detect and warn about python-gnomeapplet and awn-extras dependencies, which may not be
 #	installed on a clean system
-if [ -n "`which dpkg`" ]; then
-	echo " - Your system seems to use dpkg, checking for dependencies..."
-	if [ -z "`dpkg -L python-gnomeapplet 2>/dev/null`" ]; then
-		#warn about missing python-gnomeapplet library
-		echo -e "\nNOTICE: it appears that python-gnomeapplet is not installed. You may want to run 'sudo apt-get install python-gnomeapplet' to install it. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
-		read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
-		if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
-			apt-get install python-gnomeapplet
-		fi
-	fi
-	
-	if [ -n "$AWNPREFIX" ]; then
-		#look for awnlib
-		if [ -z "`dpkg -L python-awn-extras`" ]; then
-			echo -e "\nNOTICE: it appears that awn is installed, but python-awn-extras is not installed. You may want to run 'sudo apt-get install python-awn-extras' to install it if you intend to use the awn applet. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
-			read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
-			if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
-				apt-get install python-awn-extras
-			fi
-		fi	
-	fi
-fi
+#if [ -n "`which dpkg`" ]; then
+#	echo " - Your system seems to use dpkg, checking for dependencies..."
+#	if [ -z "`dpkg -L python-gnomeapplet 2>/dev/null`" ]; then
+#		#warn about missing python-gnomeapplet library
+#		echo -e "\nNOTICE: it appears that python-gnomeapplet is not installed. You may want to run 'sudo apt-get install python-gnomeapplet' to install it. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
+#		read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
+#		if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+#			apt-get install python-gnomeapplet
+#		fi
+#	fi
+#	
+#	if [ -n "$AWNPREFIX" ]; then
+#		#look for awnlib
+#		if [ -z "`dpkg -L python-awn-extras`" ]; then
+#			echo -e "\nNOTICE: it appears that awn is installed, but python-awn-extras is not installed. You may want to run 'sudo apt-get install python-awn-extras' to install it if you intend to use the awn applet. If you're not running Ubuntu, this might not be a problem - the library you need might have a different name."
+#			read -p "Shall I try to run this now (only guaranteed to work if you're running Ubuntu 10.04-11.04) (Y/N)?" c
+#			if [ -n "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+#				apt-get install python-awn-extras
+#			fi
+#		fi	
+#	fi
+#fi
 
 echo ""
 read -p "Proceed with install? (Y/N) " c
 if [ -z "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
-	echo -e "\n"
+	echo -e "\nAborted.\n\n"
 	exit 1
 fi
 
@@ -179,6 +191,6 @@ fi
 
 echo -e "You can get a usage report from the command-line by typing 'internode-usage-report'.\n"
 echo "You can also run '$APPPATH/run_in_window' to get the GNOME applet in it's own small window."
-echo -e "\nIf you have problems, check out /tmp/internode-applet.log. You can also email this file to antisol@internode.on.net with 'internode applet' in the subject."
+echo -e "\nIf you have problems, check out /tmp/internode-applet.log. You can also email this file to nodeutil@antisol.org with 'internode applet' in the subject."
 echo -e "\nEnjoy! :)\n\n - Dale Maggee\n\n"
 

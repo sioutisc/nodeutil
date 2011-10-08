@@ -512,7 +512,7 @@ class NodeUtil(object):
 				time.sleep(5)
 				raise IOError
 
-			request = urllib2.Request("http://users.on.net/~antisol/nodeutil/version-check.php?t=1")
+			request = urllib2.Request("http://antisol.org/nodeutil/version-check.php?t=1")
 			user_agent = ('NodeUtil/%02.1f (%s)' % (VERSION,self.user_agent_text))
 			#log("User Agent: '%s'" % user_agent)
 			request.add_header('User-Agent', user_agent)

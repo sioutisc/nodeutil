@@ -867,7 +867,7 @@
                         <property name="receives_default">True</property>
                         <property name="has_tooltip">True</property>
                         <property name="relief">none</property>
-                        <property name="uri">http://users.on.net/antisol/nodeutil</property>
+                        <property name="uri">http://antisol.org/nodeutil</property>
                       </widget>
                       <packing>
                         <property name="position">0</property>
@@ -880,7 +880,7 @@
                         <property name="can_focus">True</property>
                         <property name="receives_default">True</property>
                         <property name="relief">none</property>
-                        <property name="uri">http://users.on.net/~antisol/nodeutil/version-check.php</property>
+                        <property name="uri">http://antisol.org/nodeutil/version-check.php</property>
                       </widget>
                       <packing>
                         <property name="position">1</property>

@@ -1,0 +1,138 @@
+#!/bin/bash
+#check dependencies for the NodeUtil suite.
+#output warning messages about nonessential dependencies
+#return nonzero if there's a problem
+
+
+UBUNTU="`uname -a | grep [Uu]buntu`"
+APT_DPKG="`which apt-get`"
+if [ -n $APT_DPKG ]; then
+	APT_DPKG="`which dpkg`"
+fi	
+
+try_installing() {
+	#attempt to install package(s) $1 if the system runs ubuntu.
+	#	if we're not on ubuntu but we have apt-get,
+	#	show a warning and prompt for alternate package name
+	#	if we don't have apt-get, just display a warning
+
+	if [ -n "$UBUNTU" ]; then
+		echo -e "\nYour system is running Ubuntu, I can automatically install the software you need!\nYou'll need to be connected to teh intarwebs for this to work.\n"
+
+		read -p "Shall I run 'sudo apt-get install $1' now? (Y/N)" c
+		if [ -z "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+		    echo -e "\n"
+		    return 1
+		fi
+		sudo apt-get install $1
+		if [ "$?" ]; then 
+			echo "Install OK!"
+		else
+			echo "Install FAILED!"
+			return 1
+		fi
+	else 
+		if [ -n "$APT_DPKG" ]; then
+			echo "Your system seems to use apt / dpkg, but isn't Ubuntu. If it's an Ubuntu variant / descendant, there's a good chance that I can automatically install the packages you need."
+
+			read -p "Shall I run 'sudo apt-get install $1' now? (Y/N)" c
+			if [ -z "`echo $c | egrep '[Yy]([Ee][Ss])?'`" ]; then
+				echo -e "\n"
+			    return 1
+			fi
+			sudo apt-get install $1
+			if [ "$?" ]; then 
+				echo "Install OK!"
+			else
+				echo "Install FAILED!"
+				return 1
+			fi
+		else
+			echo -e "You are not running a dpkg / apt based system, unfortunately I can't help you install dependencies.\nYou need to install something like $1. Check the intarwebs for information specific to your distribution."
+			return 1
+		fi
+	fi
+
+}
+
+echo "Checking Dependencies..."
+
+#essentials:
+
+echo -n " - python..."
+#check for python
+PYTHON=`which python`
+if [ -n "$PYTHON" ]; then
+	echo "OK!"
+else
+	echo "No!"
+	echo -e "\nYou need to have Python installed to use the NodeUtil Suite.\n"
+	exit 1
+fi
+
+#check for pygtk etc:
+echo -n " - pygtk..."
+if `python -c "import pygtk; import gtk; import gtk.gdk; import cairo; import pango"`; then
+	echo "OK!"
+else
+	echo "No!"
+	echo -e "\nYou need to have PyGTK installed to use the NodeUtil Suite.\n"
+#this got complicated fast!
+#	if try_installing "python-cairo python-gtk2 python-gnome2"; then
+#		echo "install OK!"
+#	else
+#		echo "Install FAILED!"
+		exit 1
+#	fi
+fi
+
+#check for gnomeapplet:
+echo -n " - python-gnomeapplet..."
+if `python -c "import gnomeapplet"`; then
+	echo "OK!"
+else
+	echo "No!"
+	echo -e "\npython-gnomeapplet doesn't seem to be installed. This is required if you intend to use the Gnome Panel Applet.\nIf you only intend to use the AWN applet and/or the console tool, you may ignore this.\nOtherwise install something like python-gnomeapplet.\n\n"
+	if [ -n "$UBUNTU" ]; then
+		echo -e "\n** You're running ubuntu, you should type: 'sudo apt-get install python-gnomeapplet' to fix this. **\n"
+	fi
+
+fi
+
+#check for awn...
+echo -n " - AWN..."
+if [ -n "`which avant-window-navigator`" ]; then
+	echo "OK!"
+
+	#AWN is installed - check for python awn and awnlib...
+	echo -n " - python-awn..."
+	if `python -c "import awn"`; then
+		echo "OK!"
+	else
+		echo "No!"
+
+		echo -e "\npython-awn doesn't seem to be installed. This is required if you intend to use the AWN applet.\nIf you only intend to use the Gnome applet or the console tool, you may ignore this.\nOtherwise install something like python-awn.\n\n"
+		exit 1
+
+	fi
+
+	#awnlib
+	echo -n " - awnlib..."
+	if `python -c "from awn.extras import awnlib"`; then
+		echo "OK!"
+	else
+		echo "No!"
+
+		echo -e "\nawnlib doesn't seem to be installed. This is required if you intend to use the AWN applet.\nIf you only intend to use the Gnome applet or the console tool, you may ignore this.\nOtherwise install something like python-awn-extras.\n\n"
+
+		exit 1
+
+	fi
+
+else
+	#awn isn't installed, don't check for awnlib.
+	echo "No!"
+	echo -e "\nAvant Window Navigator doesn't seem to be installed. The AWN Applet will not be installed.\nYou can re-install the NodeUtil suite to install this later.\n\n"
+fi
+
+exit 0

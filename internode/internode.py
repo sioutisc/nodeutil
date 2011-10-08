@@ -21,7 +21,7 @@
 #+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++#
 
 INTERNODE_NAME = 'Internode Usage Meter'
-INTERNODE_URL = 'http://www.users.on.net/~antisol/nodeutil'
+INTERNODE_URL = 'http://antisol.org/antisol/nodeutil'
 INTERNODE_COPYRIGHT = '(C) 2011 Dale Maggee'
 INTERNODE_DESCRIPTION = 'Applet for monitoring your Internode ADSL usage.'
 INTERNODE_AUTHORS = [
