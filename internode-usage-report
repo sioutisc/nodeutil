@@ -76,7 +76,7 @@ p.add_option("-m","--short", action="store_true",
 	dest="short", default=False, help="Show shorter, machine-readable output (format: <label>: <figure>).")
 
 p.add_option("-v","--verbose", action="store_true",
-	dest="verbose", default=False, help="Show Show debugging output")
+	dest="verbose", default=False, help="Show debugging output")
 
 
 
