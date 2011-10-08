@@ -1,7 +1,9 @@
 ####################################################
 # nodeutil2 - threaded reimplementation of nodeutil
-# Copyright (C) Dale Maggee
-# GNU GPL Licensed
+# Copyright (C) Dale Maggee, 2011.
+# Based on the GNOME meter by Sam Pohlenz 
+#	(http://www.sampohlenz.com/)
+# see license.txt for License information
 ####################################################
 
 import sys
@@ -14,7 +16,7 @@ import thread
 import threading
 import gconf
 
-VERSION=0.2
+VERSION=0.3
 
 LOGFILE="/tmp/internode-applet.log"
 """

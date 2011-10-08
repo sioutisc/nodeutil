@@ -1,8 +1,10 @@
 Internode Usage Meters for Linux Systems (Gnome / AWN / Console)
 
-By Dale Maggee
+(C)opyright 2011, Dale Maggee. BSD License. See License.txt for details.
 
-Originally Based on Sam Polenhz's GNOME Usage Meter
+Website: http://antisol.org/nodeutil
+
+Originally Based on Sam Polenhz's GNOME Usage Meter, see: http://www.sampohlenz.com/
 
 New Features added from Sam's version:
 	- removed hardcoded paths - file locations are detected at runtime
@@ -18,8 +20,6 @@ New Features added from Sam's version:
 	* New Hi-res, auto-sizing applet icons!
 	* New, more friendly (and hopefully flexible) self-extracting installer!
 
-GNU GPL, I suppose, given the GPL's viral nature... :( it should be BSD...
-
 For Requirements, see the INSTALL file
 
 run 'sudo ./setup.sh' to install, then kill and restart either gnome-panel or avant-window-navigator, and the applets should become available.
@@ -29,6 +29,8 @@ TODO:
 	- implement alert system (alerts when you reach a certain usage level)
 	- option to disable version checks
 	- make timing configurable (settings for 'refresh' and 'refresh if error')
+		(current timing: nodeutil updates every 30 minutes, and will retry 
+			every 10 minutes if there is an error fetching data.)
 
 
 KNOWN ISSUES:
@@ -36,4 +38,4 @@ KNOWN ISSUES:
 
 	2. (low - GNOME Applet only) The GNOME applet doesn't resize with the panel completely smoothly, and the icon is invisible for panels less than 24px in height. This is due to the gnomeapplet reporting it's size incorrectly, I haven't figured out how to get the proper size of the applet for resizing.
 
-	
+
