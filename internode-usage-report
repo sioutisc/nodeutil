@@ -7,19 +7,16 @@
 from internode.nodeutil import *
 from optparse import *
 
-p = OptionParser( usage="Usage: %%prog [options]\n\nRetrieves and displays stats on your Internode usage.\n\nIn order to be useful for scripting purposes, 'Internode report'-type info (e.g: Usage Report / Error messages) are sent to STDOUT, while things like status information (e.g: 'fetching') and log messages (when -v is used) are sent to STDERR.\n\nPart of the NodeUtils Suite v%2.1f, (C)opyright Dale Maggee, 2011. BSD License." % VERSION,
+#create option parser with program help text & version string
+p = OptionParser( usage="Usage: %%prog [options]\n\nRetrieves and displays stats on your Internode usage.\n\nIn order to be useful for scripting purposes, 'Internode report'-type info\n  (e.g: Usage Report / Error messages) are sent to STDOUT, while things\n  like status information (e.g: 'fetching') and --verbose's log messages\n  are sent to STDERR.\n\nPart of the NodeUtils Suite v%2.1f, (C)opyright Dale Maggee, 2011. BSD License." % VERSION,
 		version="NodeUtil v%2.1f." % VERSION )
 
-#p.add_option( "-v", "--verbose", action="store_true", dest="verbose", default=False, help="Show more (debugging) output" )
-
-#p.add_option( "-s", "--short", action="store_true",dest="short", default=False, 
-#		help="Show short text (format: '<label>: <number> <unit>')" )
-
-
 ##################################################
+# set up command-line options:
+#
 
 p.add_option("-H","--hunam-readable", action="store_true",
-	dest="hunam", default=False, help="Hunam-readable mode: Generates a report optimized for the viewing pleasure of sapient lifeforms. This option is the default if no options are specified. If -H is passed, this disables all other options except for -v.")
+	dest="hunam", default=False, help="Hunam-readable mode: Generates a report optimized for the viewing pleasure of sapient lifeforms. This option is the default if no options are specified. If -H is specified explicitly, this disables all other options except for -v.")
 
 p.add_option("-u","--used", action="store_false", 
 	dest="used", default=True, help="Don't Show MB Used.")
@@ -58,7 +55,7 @@ p.add_option("-s","--speed", action="store_true",
 	dest="speed", default=False, help="Show Plan Speed")
 
 p.add_option("-^","--uploads", action="store_true",
-	dest="uploads_charged", default=False, help="Show uploads charged' indicator")
+	dest="uploads_charged", default=False, help="Show 'uploads charged' indicator")
 
 p.add_option("-C","--carrier", action="store_true",
 	dest="carrier", default=False, help="Show Line Carrier")
@@ -70,28 +67,28 @@ p.add_option("-a","--all", action="store_true",
 	dest="all", default=False, help="Show Everything. Overrides everything except -H, -v, and -m")
 
 p.add_option("-c","--csv", action="store_true",
-	dest="csv", default=False, help="Output CSV History")
+	dest="csv", default=False, help="Output CSV History (this is a misnomer: output is actually tab-delimited)")
 
 p.add_option("-m","--short", action="store_true",
 	dest="short", default=False, help="Show shorter, machine-readable output (format: <label>: <figure>).")
 
 p.add_option("-v","--verbose", action="store_true",
-	dest="verbose", default=False, help="Show debugging output")
+	dest="verbose", default=False, help="Show debugging output. Note that this disables Hunam mode, so you may want to use '-vH' instead.")
 
-
-
+#
+#
 ##################################################
-
-#p.add_option_group(g)
-
-#p.add_option("-c","--csv",action="store_true",dest="csv",default=False,help="Output comma-separated history data.")
 
 #Parse command line...
 (options, args) = p.parse_args()
 
+#react to some options straight away..
+
+#verbose mode (note: no program output before here!)...
 if options.verbose:
 	set_debug()
 
+#'all' sets everything except hunam to true...
 if options.all:
 	options.used = True
 	options.quota = True
@@ -114,6 +111,7 @@ if (len(sys.argv) - 1) == 0:
 	#errprint("Hunam-Readable Mode Enabled")
 	options.hunam = True
 
+#Okie
 log("----------------------------------------")
 log("  Internode Console Usage Meter - Init")
 log("----------------------------------------")
@@ -123,6 +121,7 @@ node = NodeUtil()
 
 if not node.load_prefs():
 	errprint("You have no preferences set, showing dialog...")
+	#Now, we need node-dialog...
 	from internode.node_dialog import *
 	NodeDialog_Config(node)
 
