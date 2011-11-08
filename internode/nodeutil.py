@@ -16,7 +16,7 @@ import thread
 import threading
 import gconf
 
-VERSION=0.3
+VERSION=0.4
 
 LOGFILE="/tmp/internode-applet.log"
 """
