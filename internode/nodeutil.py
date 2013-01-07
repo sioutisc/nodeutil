@@ -14,9 +14,10 @@ import base64
 from xml.dom import minidom
 import thread
 import threading
-import gconf
 
-VERSION=0.4
+import credentials
+
+VERSION=0.5
 
 LOGFILE="/tmp/internode-applet.log"
 """
@@ -107,10 +108,7 @@ class NodeUtil(object):
 		self.error = ""
 		self.api_host = "https://customer-webtools-api.internode.on.net"
 
-		self.username = ""
-		self.password = ""
-
-		self.show_used = False
+		self.credentials = credentials.CredentialsManager()
 
 		self._time = 0
 		#how long retrieval took
@@ -138,10 +136,12 @@ class NodeUtil(object):
 		self.lock = threading.RLock()
 
 		#gconf client for retrieving gnome settings
-		self.gconf_client = gconf.client_get_default()
+		#self.gconf_client = gconf.client_get_default()
 
 		#we set the 'updating' state initially, as 'OK' implies that we have data
 		self.status = "Updating"
+
+		self.keyring_id = None
 
 	"""
 	getter / setter for status property
@@ -347,27 +347,15 @@ class NodeUtil(object):
 		self.status = "Error"
 
 	def load_prefs(self):
-		"""
-		Reads the username and password from the GConf registry
-		"""
 		log('Loading Preferences')
+		return self.credentials.load_credentials()
 
-		username = self.gconf_client.get_string("/apps/internode-applet/username")
-		password = self.gconf_client.get_string("/apps/internode-applet/password")
-		show_used = self.gconf_client.get_bool("/apps/internode-applet/show_used")
-		
-		if username == None or password == None:
-			if username == None:
-				username = ""
-			if password == None:
-				password = ""
-			return False
-			#self.show_prefs()
-		else:
-			self.username = username
-			self.password = password
-			self.show_used = show_used
-			return True
+	def save_prefs(self,username,password,show_used):
+		log('Saving Preferences')
+		self.credentials.username = username
+		self.credentials.password = password
+		self.credentials.show_used = show_used
+		self.credentials.save_credentials()
 
 	"""
 	Internode API functions.
@@ -411,7 +399,7 @@ class NodeUtil(object):
 			self.daysleft = get_date_difference(traffic.getAttribute('rollover'))
 
 			self.time = time.time()
-			if INSANE_DEBUG:log( "Data updated for username %s." % self.username)
+			if INSANE_DEBUG:log( "Data updated for username %s." % self.credentials.username)
 
 			self.error = ""
 
@@ -548,7 +536,7 @@ class NodeUtil(object):
 		return minidom.parse(result)
 
 	def http_auth_string(self):
-		base64string = base64.encodestring("%s:%s" % (self.username, self.password))[:-1]
+		base64string = base64.encodestring("%s:%s" % (self.credentials.username, self.credentials.password))[:-1]
 		return "Basic %s" % base64string
 
 	"""

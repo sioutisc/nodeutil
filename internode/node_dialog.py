@@ -37,6 +37,8 @@ except ImportError:
 from nodeutil import *
 from graph import Graph
 
+import credentials
+
 log("---------------------------------------------------")
 log('NodeDialog Init.')
 
@@ -422,21 +424,11 @@ class NodeDialog_Config(NodeDialog):
 
 		result = preferences.run()
 
+		# Update username and password
 		if result == gtk.RESPONSE_OK:
-			# Update username and password
-			self.nodeutil.username = usertext.get_text()
-			self.nodeutil.password = passtext.get_text()
-			self.nodeutil.show_used = used.get_active()
-			self.write_prefs()
-			#self.update()
+			self.nodeutil.save_prefs(usertext.get_text(),passtext.get_text(),used.get_active())
 
 		preferences.destroy()
-
-	def write_prefs(self):
-		log("Saving Preferences")
-		self.gconf_client.set_string("/apps/internode-applet/username", self.nodeutil.username)
-		self.gconf_client.set_string("/apps/internode-applet/password", self.nodeutil.password)
-		self.gconf_client.set_bool("/apps/internode-applet/show_used", self.nodeutil.show_used)
 
 class NodeDialog_Chart(NodeDialog):
 	"""

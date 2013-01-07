@@ -120,10 +120,8 @@ errprint("\nFetching Internode Usage...\n")
 node = NodeUtil()
 
 if not node.load_prefs():
-	errprint("You have no preferences set, showing dialog...")
-	#Now, we need node-dialog...
-	from internode.node_dialog import *
-	NodeDialog_Config(node)
+	errprint("You have no preferences set, please enter below...")
+	node.credentials.prompt_for_credentials()
 
 node.update(True)
 
@@ -137,7 +135,7 @@ if node.status == "OK":
 	if options.csv:
 		#output CSV history...
 		print "----------------------------------------------"
-		print "Internode Usage History for: %s" % node.username
+		print "Internode Usage History for: %s" % node.credentials.username
 		print "----------------------------------------------"
 		#print node.history
 		for day in node.history:
@@ -150,7 +148,7 @@ if node.status == "OK":
 	elif options.hunam:
 		if not options.short:
 			print "----------------------------------------------"
-			print "Internode Usage for: %s" % node.username
+			print "Internode Usage for: %s" % node.credentials.username
 			print "----------------------------------------------"
 
 		print " - You have used %2.2f MB / %2d MB ( %2.2f%% )."  % (node.used,node.quota,((node.used / node.quota)*100))
@@ -223,9 +221,9 @@ if node.status == "OK":
 
 		if options.username:
 			if options.short:
-				print "Username: %s" % node.username
+				print "Username: %s" % node.credentials.username
 			else:
-				print " - Your Internode username is '%s'" % node.username
+				print " - Your Internode username is '%s'" % node.credentials.username
 	
 		if options.speed:
 			if options.short:

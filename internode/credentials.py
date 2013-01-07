@@ -1,3 +1,12 @@
+# ==================================================
+# Copyright 2012,  Christos Sioutis
+# christos.sioutis@gmail.com
+#
+# The CredentialsManager uses the Gnome Keyring to 
+# store credentials. This is more secure than the
+# gconf solution used previously
+# ==================================================
+
 import gnomekeyring as gk
 import glib
 
@@ -6,6 +15,9 @@ class CredentialsManager:
 	def __init__(self):
 		self.keyring = "login"
 		self.display_name = "nodeutil"
+		self.username = None
+		self.password = None
+		self.show_used = True
 		glib.set_application_name(self.display_name)
 
 	def load_credentials(self):
@@ -18,7 +30,8 @@ class CredentialsManager:
 				self.username = keyring_attrs["username"]
 				self.password = item_info.get_secret()
 				self.show_used = bool(keyring_attrs["show_used"])
-
+				return True;
+		return False;
 
 	def save_credentials(self,username,passw,show_used):		
 		self.username = username
@@ -33,9 +46,10 @@ class CredentialsManager:
 		print "show_used: " + str(self.show_used)
 
 	def prompt_for_credentials(self):
-		self.username = raw_input("Enter username:")
-		self.password = raw_input("Enter password:")
+		self.username = raw_input("Enter username: ")
+		self.password = raw_input("Enter password: ")
 		self.show_used = True
+		self.save_credentials(self.username,self.password,self.show_used)
 
 def print_keyring_items(keyring):
 	item_keys = gk.list_item_ids_sync(keyring)
